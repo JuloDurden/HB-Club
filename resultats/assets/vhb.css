@@ -1,0 +1,387 @@
+/*
+ * VHB Résultats FFHB : styles front, charte V2.
+ * Accents identiques dans les deux modes : bleu #00B0E8, orange #FF6A3D.
+ * Mode sombre graphite : fond #121316, carte #1A1C20, calme #23262B, trait #2E3238.
+ *
+ * Kadence : le site force la couleur des p, li, td, th et écrase marges et
+ * fonds de certains conteneurs. D'où quelques !important ciblés ci-dessous.
+ */
+
+.vhb {
+	--vhb-blue: #00B0E8;
+	--vhb-orange: #FF6A3D;
+	--vhb-blue-txt: #006C99;
+	--vhb-orange-txt: #B33C16;
+	--vhb-bg: #FFFFFF;
+	--vhb-card: #FFFFFF;
+	--vhb-calm: #F4F5F7;
+	--vhb-line: #E3E5E8;
+	--vhb-text: #121316;
+	--vhb-text-2: #4A4F57;
+	--vhb-text-3: #6B7079;
+	--vhb-hl: rgba(0, 176, 232, .10);
+	--vhb-font: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	--vhb-display: "Big Shoulders Display", "Barlow Condensed", "Arial Narrow", sans-serif;
+	--vhb-r-lg: 16px;
+	--vhb-r-md: 12px;
+	--vhb-r-sm: 6px;
+
+	font-family: var(--vhb-font);
+	color: inherit;
+	line-height: 1.35;
+	margin: 0 0 24px !important;
+	/* Les mises en page suivent la largeur du bloc, pas celle de l'écran :
+	   un shortcode posé dans une colonne étroite reste lisible. */
+	container-type: inline-size;
+	container-name: vhb;
+}
+
+.vhb--sombre {
+	--vhb-bg: #121316;
+	--vhb-card: #1A1C20;
+	--vhb-calm: #23262B;
+	--vhb-line: #2E3238;
+	--vhb-text: #F2F3F5;
+	--vhb-text-2: #B7BBC2;
+	--vhb-text-3: #868B93;
+	--vhb-blue-txt: #00B0E8;
+	--vhb-orange-txt: #FF6A3D;
+	--vhb-hl: rgba(0, 176, 232, .16);
+}
+
+@media (prefers-color-scheme: dark) {
+	html:not([data-theme="light"]):not(.color-switch-light) .vhb--auto {
+		--vhb-bg: #121316; --vhb-card: #1A1C20; --vhb-calm: #23262B; --vhb-line: #2E3238;
+		--vhb-text: #F2F3F5; --vhb-text-2: #B7BBC2; --vhb-text-3: #868B93;
+		--vhb-blue-txt: #00B0E8; --vhb-orange-txt: #FF6A3D; --vhb-hl: rgba(0, 176, 232, .16);
+	}
+}
+/* « Comme les pages du site » : la classe vhb-sombre est posée sur <html>
+   par l'en-tête commun selon le choix du visiteur (bouton soleil / lune). */
+html.vhb-sombre .vhb--pages {
+	--vhb-bg: #121316; --vhb-card: #1A1C20; --vhb-calm: #23262B; --vhb-line: #2E3238;
+	--vhb-text: #F2F3F5; --vhb-text-2: #B7BBC2; --vhb-text-3: #868B93;
+	--vhb-blue-txt: #00B0E8; --vhb-orange-txt: #FF6A3D; --vhb-hl: rgba(0, 176, 232, .16);
+}
+html.vhb-bascule .vhb--pages, html.vhb-bascule .vhb--pages * {
+	transition: background-color .5s, color .5s, border-color .5s;
+}
+@media (prefers-reduced-motion: reduce) {
+	html.vhb-bascule .vhb--pages, html.vhb-bascule .vhb--pages * { transition: none; }
+}
+html[data-theme="dark"] .vhb--auto,
+html.color-switch-dark .vhb--auto,
+body.vhb-dark .vhb--auto {
+	--vhb-bg: #121316; --vhb-card: #1A1C20; --vhb-calm: #23262B; --vhb-line: #2E3238;
+	--vhb-text: #F2F3F5; --vhb-text-2: #B7BBC2; --vhb-text-3: #868B93;
+	--vhb-blue-txt: #00B0E8; --vhb-orange-txt: #FF6A3D; --vhb-hl: rgba(0, 176, 232, .16);
+}
+
+.vhb *, .vhb *::before, .vhb *::after { box-sizing: border-box; }
+
+/* Titres ------------------------------------------------------------- */
+.vhb .vhb-head { margin: 0 0 14px !important; }
+.vhb .vhb-head--section { margin-bottom: 18px !important; }
+.vhb .vhb-kicker {
+	display: block; font-size: 12px; font-weight: 700; letter-spacing: .12em;
+	text-transform: uppercase; color: var(--vhb-orange-txt);
+}
+.vhb .vhb-title {
+	font-family: var(--vhb-display); font-weight: 800; font-size: 28px; line-height: 1.05;
+	margin: 2px 0 0 !important; padding: 0 !important; color: inherit; text-transform: uppercase;
+	display: inline-block;
+}
+.vhb .vhb-title--xl { font-size: clamp(30px, 4vw, 44px); display: block; }
+.vhb .vhb-sub { font-size: 13px; color: var(--vhb-text-3); margin-top: 4px; letter-spacing: .02em; }
+.vhb .vhb-tag {
+	display: inline-block; vertical-align: middle; margin-left: 10px; padding: 2px 10px;
+	border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+	background: var(--vhb-calm); color: var(--vhb-text-2);
+}
+.vhb .vhb-h {
+	font-family: var(--vhb-display); font-size: 20px; font-weight: 800; text-transform: uppercase;
+	letter-spacing: .03em; margin: 0 0 8px !important; padding: 0 !important; color: var(--vhb-text);
+}
+
+/* Cartes et panneaux -------------------------------------------------- */
+.vhb .vhb-panel,
+.vhb .vhb-frame,
+.vhb-prochain > .vhb-body,
+.vhb-seul > .vhb-body {
+	background: var(--vhb-card) !important;
+	color: var(--vhb-text);
+	border: 1px solid var(--vhb-line);
+	border-radius: var(--vhb-r-lg);
+	padding: 16px 18px !important;
+	margin: 0 !important;
+}
+.vhb .vhb-panel,
+.vhb .vhb-frame,
+.vhb-prochain > .vhb-body,
+.vhb-seul > .vhb-body { container-type: inline-size; }
+.vhb-equipe > .vhb-body { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.vhb-equipe > .vhb-body > .vhb-head,
+.vhb-equipe > .vhb-body > .vhb-tabbar,
+.vhb-equipe > .vhb-body > .vhb-foot,
+.vhb-equipe > .vhb-body > .vhb-msg { grid-column: 1 / -1; margin: 0 !important; }
+@container vhb (min-width: 820px) {
+	.vhb-equipe > .vhb-body { grid-template-columns: 1fr 1fr; }
+	.vhb-equipe .vhb-panel[data-panel="classement"] { grid-column: 1 / -1; }
+}
+
+.vhb .vhb-frames { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@container vhb (min-width: 820px) {
+	.vhb .vhb-frames { grid-template-columns: 1.15fr 1fr; align-items: start; }
+}
+.vhb .vhb-frame.is-featured { border-top: 4px solid var(--vhb-orange); }
+.vhb .vhb-frame-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.vhb .vhb-frame-head .vhb-h { margin: 0 !important; }
+.vhb .vhb-range { font-size: 13px; color: var(--vhb-text-3); }
+
+.vhb .vhb-card-head { display: flex; flex-direction: column; margin-bottom: 8px; }
+.vhb .vhb-team { font-family: var(--vhb-display); font-weight: 800; font-size: 22px; text-transform: uppercase; }
+
+.vhb .vhb-msg {
+	padding: 12px 14px; border-radius: var(--vhb-r-md); background: var(--vhb-calm);
+	color: var(--vhb-text-2); font-size: 14px; margin: 0 !important;
+}
+.vhb .vhb-msg--link { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.vhb .vhb-btn.vhb-btn--sm { padding: 6px 12px; font-size: 12px; }
+.vhb .vhb-msg--warn { border-left: 3px solid var(--vhb-orange); }
+.vhb .vhb-maj, .vhb .vhb-foot { font-size: 12px; opacity: .7; margin-top: 10px; }
+.vhb .vhb-foot a { color: var(--vhb-blue-txt); }
+
+/* Blasons ------------------------------------------------------------ */
+.vhb .vhb-logo {
+	width: 32px; height: 32px; flex: 0 0 32px; object-fit: contain;
+	background: none; border-radius: 0; margin: 0 !important;
+}
+.vhb .vhb-logo--none {
+	border-radius: 50%;
+	display: inline-flex; align-items: center; justify-content: center;
+	background: #8D929A; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .02em;
+}
+.vhb .vhb-club { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+.vhb .vhb-club-name {
+	font-weight: 600; font-size: 14px; min-width: 0;
+	/* Coupure entre les mots uniquement, jamais au milieu (« VILLENE / UVE »). */
+	overflow-wrap: normal !important; word-break: normal !important; hyphens: manual !important;
+}
+.vhb .vhb-cat {
+	display: block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+	color: var(--vhb-blue-txt); margin-bottom: 2px;
+}
+
+/* Ligne de résultat --------------------------------------------------- */
+.vhb .vhb-row { border-top: 1px solid var(--vhb-line); padding: 12px 0; }
+.vhb .vhb-h + .vhb-row,
+.vhb .vhb-frame-head + .vhb-row,
+.vhb .vhb-card-head + .vhb-row { border-top: 0; }
+.vhb .vhb-result {
+	display: grid; grid-template-columns: 58px minmax(0, 1fr) auto minmax(0, 1fr);
+	align-items: center; gap: 10px;
+}
+.vhb .vhb-j { font-family: var(--vhb-display); font-weight: 800; font-size: 18px; color: var(--vhb-text-3); line-height: 1.1; }
+.vhb .vhb-j .vhb-cat { font-family: var(--vhb-font); font-size: 10px; }
+.vhb .vhb-j-date { display: block; font-family: var(--vhb-font); font-size: 11px; font-weight: 500; }
+.vhb .vhb-side { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.vhb .vhb-side--home { justify-content: flex-end; text-align: right; }
+.vhb .vhb-side--home .vhb-logo { order: 2; }
+.vhb .vhb-side.is-vhb .vhb-club-name { font-weight: 800; }
+.vhb .vhb-score {
+	font-family: var(--vhb-display); font-weight: 800; font-size: 30px; line-height: 1;
+	min-width: 92px; text-align: center; display: inline-flex; justify-content: center; gap: 6px;
+	padding: 6px 10px; border-radius: var(--vhb-r-md); background: var(--vhb-calm); color: var(--vhb-text);
+}
+.vhb .vhb-dash { color: var(--vhb-text-3); }
+.vhb .vhb-mid { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.vhb .vhb-fdm {
+	display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600;
+	color: var(--vhb-blue-txt) !important; text-decoration: none !important; white-space: nowrap;
+}
+.vhb .vhb-fdm:hover, .vhb .vhb-fdm:focus-visible { text-decoration: underline !important; }
+.vhb .vhb-score--fo {
+	flex-direction: column; gap: 2px; font-size: 20px; text-transform: uppercase;
+	color: #fff; background: var(--vhb-orange);
+}
+.vhb .vhb-fo-de { overflow-wrap: normal; word-break: normal; white-space: normal; line-height: 1.15; font-family: var(--vhb-font); font-size: 10px; font-weight: 600; letter-spacing: .02em; text-transform: none; opacity: .9; }
+
+/* Résultats précédents repliés */
+.vhb .vhb-more { border-top: 1px solid var(--vhb-line); }
+.vhb .vhb-more > summary {
+	cursor: pointer; list-style: none; padding: 10px 0 4px; font-size: 13px; font-weight: 700; color: var(--vhb-blue-txt);
+}
+.vhb .vhb-more > summary::-webkit-details-marker { display: none; }
+.vhb .vhb-more > summary::after { content: " ▾"; font-size: 11px; }
+.vhb .vhb-more[open] > summary::after { content: " ▴"; }
+.vhb .vhb-more > summary + .vhb-row { border-top: 0; }
+
+/* Ajouter à mon agenda */
+.vhb .vhb-agenda { margin-top: 10px; font-size: 13px; }
+.vhb .vhb-agenda > summary {
+	display: inline-flex; align-items: center; gap: 8px; cursor: pointer; list-style: none;
+	padding: 7px 14px; border-radius: 999px; border: 1px solid var(--vhb-line);
+	font-weight: 700; color: inherit; background: transparent;
+}
+.vhb .vhb-agenda > summary::-webkit-details-marker { display: none; }
+.vhb .vhb-agenda > summary svg { color: var(--vhb-blue); }
+.vhb .vhb-agenda > summary:focus-visible { outline: 2px solid var(--vhb-blue); outline-offset: 2px; }
+.vhb .vhb-agenda[open] > summary { border-color: var(--vhb-blue); }
+.vhb .vhb-agenda-menu { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.vhb .vhb-agenda-note { flex-basis: 100%; font-size: 12px; opacity: .75; }
+.vhb .vhb-btn.vhb-btn--ghost { background: transparent; color: inherit !important; border: 1px solid var(--vhb-line); }
+.vhb-agenda-seul > .vhb-body { padding: 0 !important; }
+
+/* Pastille V / N / D (option par équipe) */
+.vhb .vhb-result.has-vd { grid-template-columns: 58px minmax(0, 1fr) auto minmax(0, 1fr) 28px; }
+.vhb .vhb-vd {
+	width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+	font: 800 13px/1 var(--vhb-font); color: #fff; justify-self: end;
+}
+.vhb .vhb-vd--v { background: var(--vhb-blue); color: #04232E; }
+.vhb .vhb-vd--d { background: var(--vhb-orange); }
+.vhb .vhb-vd--n { background: var(--vhb-calm); color: var(--vhb-text-2); border: 1px solid var(--vhb-line); }
+.vhb .vhb-vd--empty { background: none; }
+
+/* Ligne de match à venir ---------------------------------------------- */
+.vhb .vhb-next { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; align-items: start; gap: 12px; }
+.vhb .vhb-when { display: flex; flex-direction: column; line-height: 1.05; }
+.vhb .vhb-day { font-family: var(--vhb-display); font-weight: 800; font-size: 20px; text-transform: uppercase; color: var(--vhb-text); }
+.vhb .vhb-hour { font-family: var(--vhb-display); font-weight: 700; font-size: 22px; color: var(--vhb-blue-txt); }
+.vhb .vhb-hour--tbc { font-family: var(--vhb-font); font-size: 12px; font-weight: 600; color: var(--vhb-text-3); margin-top: 2px; }
+.vhb .vhb-opp { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.vhb .vhb-badge {
+	display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;
+	text-transform: uppercase; letter-spacing: .06em; margin-top: 4px;
+}
+.vhb .vhb-badge--dom { background: var(--vhb-blue); color: #04232E; }
+.vhb .vhb-badge--ext { background: transparent; color: var(--vhb-text-2); border: 1px solid var(--vhb-line); }
+
+/* Lieu dépliant -------------------------------------------------------- */
+.vhb .vhb-lieu { font-size: 13px; color: var(--vhb-text-2); }
+.vhb .vhb-lieu summary {
+	display: inline-flex; align-items: center; gap: 6px; cursor: pointer; list-style: none;
+	color: var(--vhb-blue-txt); font-weight: 600;
+}
+.vhb .vhb-lieu summary::-webkit-details-marker { display: none; }
+.vhb .vhb-lieu summary::after { content: "▾"; font-size: 11px; transition: transform .2s; }
+.vhb .vhb-lieu[open] summary::after { transform: rotate(180deg); }
+.vhb .vhb-lieu summary:focus-visible { outline: 2px solid var(--vhb-blue); outline-offset: 2px; border-radius: 4px; }
+.vhb .vhb-lieu--tbc { display: inline-flex; align-items: center; gap: 6px; color: var(--vhb-text-3); font-style: italic; }
+.vhb .vhb-pin { flex: 0 0 auto; }
+.vhb .vhb-lieu-body {
+	margin-top: 8px; padding: 10px 12px; border-radius: var(--vhb-r-md); background: var(--vhb-calm);
+	display: flex; flex-direction: column; gap: 10px;
+}
+.vhb .vhb-addr { color: var(--vhb-text); }
+.vhb .vhb-addr-nom { display: block; font-weight: 700; }
+.vhb .vhb-addr-ffhb { display: block; font-size: 11px; color: var(--vhb-text-3); margin-top: 2px; }
+.vhb .vhb-map { display: none; }
+.vhb .vhb-map iframe { width: 100%; height: 240px; border: 0; border-radius: var(--vhb-r-sm); display: block; }
+.vhb .vhb-map-link { font-size: 12px; color: var(--vhb-blue-txt); display: inline-block; margin-top: 4px; }
+.vhb .vhb-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+.vhb .vhb-btn {
+	display: inline-block; padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 700;
+	text-decoration: none !important; background: var(--vhb-blue); color: #04232E !important;
+}
+.vhb .vhb-btn + .vhb-btn { background: transparent; color: var(--vhb-text) !important; border: 1px solid var(--vhb-line); }
+@media (min-width: 768px) {
+	.vhb .vhb-map { display: block; }
+	.vhb .vhb-nav { display: none; }
+}
+
+/* Classement ---------------------------------------------------------- */
+.vhb .vhb-table-wrap { overflow-x: auto; margin: 0 -4px; }
+.vhb .vhb-table { width: 100%; border-collapse: collapse; margin: 0 !important; font-size: 14px; border: 0 !important; }
+.vhb .vhb-table th,
+.vhb .vhb-table td {
+	padding: 9px 6px !important; text-align: center; border: 0 !important;
+	border-bottom: 1px solid var(--vhb-line) !important; background: transparent !important;
+	white-space: nowrap;
+}
+.vhb .vhb-table th { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.vhb .vhb-table abbr { text-decoration: none; border: 0; cursor: help; }
+.vhb .vhb-table .vhb-c-club { text-align: left; white-space: normal; width: 100%; }
+.vhb .vhb-table .vhb-c-pos { width: 40px; font-weight: 800; }
+.vhb .vhb-table .vhb-c-pts { font-weight: 800; }
+.vhb .vhb-table .vhb-logo { width: 26px; height: 26px; flex-basis: 26px; }
+.vhb .vhb-table tr.is-vhb td { background: var(--vhb-hl) !important; font-weight: 700; }
+.vhb .vhb-table tr.is-vhb td:first-child { box-shadow: inset 4px 0 0 var(--vhb-blue); }
+.vhb .vhb-table tr.is-vhb .vhb-club-name { font-weight: 800; }
+
+/* Onglets (mobile) ---------------------------------------------------- */
+.vhb .vhb-tabbar { display: none; }
+@media (max-width: 767px) {
+	.vhb .vhb-hide-m { display: none; }
+}
+@container vhb (max-width: 599px) {
+	.vhb .vhb-hide-m { display: none; }
+	.vhb-tabs-on .vhb-tabbar {
+		display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--vhb-calm);
+	}
+	.vhb-tabs-on .vhb-tab {
+		flex: 1; border: 0; border-radius: 999px; padding: 8px 6px; background: transparent;
+		font: 700 13px/1 var(--vhb-font); color: var(--vhb-text-2); cursor: pointer;
+	}
+	.vhb-tabs-on .vhb-tab.is-active { background: var(--vhb-card); color: var(--vhb-text); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+	.vhb-tabs-on .vhb-panel:not(.is-active) { display: none; }
+	.vhb-tabs-on .vhb-panel .vhb-h { display: none; }
+	.vhb .vhb-panel, .vhb .vhb-frame, .vhb-prochain > .vhb-body, .vhb-seul > .vhb-body { padding: 14px !important; }
+}
+
+/*
+ * Carte étroite (moins de 560 px, par exemple une demi-colonne en desktop ou
+ * un mobile) : le blason passe au-dessus du nom, pour laisser toute la
+ * largeur au nom du club. Requête sur la carte elle-même, pas sur l'écran.
+ */
+@container (max-width: 559px) {
+	.vhb .vhb-result { grid-template-columns: 40px minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; }
+	/* La pastille V/D passe sous le numéro de journée. */
+	.vhb .vhb-result.has-vd {
+		grid-template-columns: 40px minmax(0, 1fr) auto minmax(0, 1fr);
+		grid-template-areas: "j home score away" "vd home score away";
+	}
+	.vhb .vhb-result.has-vd > .vhb-j { grid-area: j; align-self: end; }
+	.vhb .vhb-result.has-vd > .vhb-side--home { grid-area: home; }
+	.vhb .vhb-result.has-vd > .vhb-mid { grid-area: score; }
+	.vhb .vhb-result.has-vd > .vhb-side--away { grid-area: away; }
+	.vhb .vhb-result.has-vd > .vhb-vd { grid-area: vd; justify-self: start; align-self: start; margin-top: 4px; width: 22px; height: 22px; font-size: 11px; }
+	.vhb .vhb-side { flex-direction: column !important; gap: 5px; text-align: center !important; justify-content: center !important; }
+	.vhb .vhb-side--home .vhb-logo { order: 0; }
+	.vhb .vhb-side .vhb-club-name { font-size: 12px; line-height: 1.2; }
+	.vhb .vhb-fdm-x { display: none; }
+	.vhb .vhb-fdm { font-size: 10.5px; }
+	.vhb .vhb-score { font-size: 25px; min-width: 76px; padding: 6px 8px; }
+	.vhb .vhb-score--fo { font-size: 15px; max-width: 108px; }
+	.vhb .vhb-next { grid-template-columns: 78px minmax(0, 1fr) auto; gap: 10px; }
+	.vhb .vhb-day { font-size: 17px; }
+	.vhb .vhb-hour { font-size: 19px; }
+	.vhb .vhb-hour.vhb-hour--tbc { font-size: 12px; }
+}
+@container (max-width: 359px) {
+	.vhb .vhb-result, .vhb .vhb-result.has-vd { grid-template-columns: 34px minmax(0, 1fr) auto minmax(0, 1fr); gap: 5px; }
+	.vhb .vhb-side .vhb-club-name { font-size: 11.5px; }
+	.vhb .vhb-score { font-size: 21px; min-width: 64px; }
+	.vhb .vhb-score.vhb-score--fo { font-size: 14px; max-width: 96px; padding: 6px; }
+}
+
+/* Plusieurs compétitions par équipe (1.3.0) ---------------------------- */
+.vhb .vhb-sub-nom {
+	display: inline-block; padding: 1px 8px; margin-right: 4px; border-radius: 999px;
+	background: var(--vhb-calm); color: var(--vhb-text-2); font-size: 11px; font-weight: 700;
+	letter-spacing: .04em; text-transform: uppercase;
+}
+.vhb .vhb-sub + .vhb-sub { margin-top: 3px; }
+.vhb .vhb-comp-tag {
+	display: inline-block; align-self: flex-start; padding: 2px 9px; border-radius: 10px;
+	font-size: 11px; font-weight: 700; letter-spacing: .03em; line-height: 1.4;
+	background: var(--vhb-calm); color: var(--vhb-text-2); border: 1px solid var(--vhb-line);
+}
+.vhb .vhb-comp-tag--coupe { background: rgba(255, 106, 61, .14); color: var(--vhb-orange-txt); border-color: rgba(255, 106, 61, .45); }
+.vhb .vhb-row--autre > .vhb-comp-tag { margin: 0 0 8px; }
+.vhb .vhb-comp-title {
+	font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+	color: var(--vhb-text-2); margin: 14px 0 4px;
+}
+.vhb .vhb-comp-title:first-child { margin-top: 0; }
+.vhb .vhb-foot a + a { margin-left: 0; }

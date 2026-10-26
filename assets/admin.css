@@ -1,0 +1,96 @@
+.vhbc-admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin: 16px 0 24px; max-width: 1200px; }
+.vhbc-admin-card { background: #fff; border: 1px solid #dcdcde; border-radius: 6px; padding: 4px 18px 16px; }
+.vhbc-admin-card--wide { grid-column: 1 / -1; }
+.vhbc-big { font-size: 28px; font-weight: 700; margin: 4px 0 8px; color: #006c99; }
+.vhbc-kv th { text-align: left; padding: 4px 16px 4px 0; font-weight: 600; white-space: nowrap; }
+.vhbc-kv td { padding: 4px 0; font-weight: 700; }
+.vhbc-pill { display: inline-block; padding: 0 8px; border-radius: 9px; background: #ffe9e2; color: #b33c16; font-size: 12px; font-weight: 600; vertical-align: middle; }
+.vhbc-pill--off, .vhbc-pill--archivee { background: #f0f0f1; color: #50575e; }
+.vhbc-pill--en_cours { background: #00b0e8; color: #04232e; }
+.vhbc-pill--preparation { background: #fff4e5; color: #8a4b00; }
+.vhbc-ok { color: #1e7d4f; font-weight: 600; }
+.vhbc-err { color: #b32d2e; }
+.vhbc-ctrl { margin: 0; }
+.vhbc-ctrl li { padding: 6px 0 6px 10px; border-left: 3px solid #ff6a3d; margin-bottom: 6px; background: #fffaf8; }
+.vhbc-codes code { font-size: 13px; }
+.vhbc-codes-list li { margin-bottom: 8px; line-height: 1.7; }
+
+/* Saisie --------------------------------------------------------------- */
+.vhbc-form th { width: 200px; }
+.vhbc-inline-label { margin: 0 6px 0 16px; font-weight: 600; }
+.vhbc-annees label { margin-right: 10px; }
+.vhbc-avant { margin-left: 6px; }
+.vhbc-check { display: block; margin: 0 0 4px; }
+.vhbc-creneaux { margin-top: 6px; }
+.vhbc-creneaux th, .vhbc-creneaux td { vertical-align: middle; padding: 6px 8px; }
+.vhbc-creneaux select, .vhbc-creneaux input[type="text"] { max-width: 100%; }
+.vhbc-creneaux td:nth-child(4) select { width: 100%; min-width: 180px; }
+.vhbc-creneaux input[type="text"] { width: 100%; min-width: 120px; }
+.vhbc-creneaux .vhbc-del-creneau { color: #b32d2e; }
+.vhbc-creneau.is-invalid td { background: #fcf0f1; }
+.vhbc-media-preview img { width: 48px; height: 48px; object-fit: contain; vertical-align: middle; margin-right: 8px; border: 1px solid #dcdcde; border-radius: 4px; }
+.vhbc-media .button-link { margin-left: 8px; color: #b32d2e; }
+
+/* Saisons -------------------------------------------------------------- */
+.vhbc-saisons { max-width: 1000px; margin-top: 12px; }
+.vhbc-saisons tr.is-current td { background: #eef9fd; }
+.vhbc-inline-form { display: inline-flex; align-items: center; gap: 8px; margin-right: 16px; }
+.vhbc-danger .vhbc-del { color: #b32d2e; }
+.vhbc-prep { max-width: 966px; margin-top: 20px; }
+
+@media (max-width: 782px) {
+	.vhbc-creneaux thead { display: none; }
+	.vhbc-creneaux tr { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px 0; border-bottom: 1px solid #dcdcde; }
+	.vhbc-creneaux td { display: block; padding: 0 4px; }
+	.vhbc-creneaux td:nth-child(4), .vhbc-creneaux td:nth-child(6) { grid-column: 1 / -1; }
+}
+
+/* Inscriptions --------------------------------------------------------- */
+.vhbc-section { margin-top: 28px; padding-top: 14px; border-top: 2px solid #dcdcde; font-size: 20px; }
+.vhbc-saison-pick { margin: 12px 0 0; display: flex; gap: 8px; align-items: center; }
+.vhbc-repeat { max-width: 1000px; }
+.vhbc-repeat td { vertical-align: middle; padding: 6px 8px; }
+.vhbc-repeat input[type="text"], .vhbc-repeat input[type="url"] { width: 100%; }
+.vhbc-repeat input.small-text { width: 80px; }
+.vhbc-repeat .vhbc-repeat-del { color: #b32d2e; }
+.vhbc-file { white-space: nowrap; }
+.vhbc-file-name { display: inline-block; max-width: 180px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+.vhbc-sub-field { margin: 6px 0 0; }
+.vhbc-sub-field span { display: inline-block; width: 110px; font-weight: 600; }
+.vhbc-file--img .vhbc-file-name img { width: 36px; height: 36px; object-fit: cover; border-radius: 50%; vertical-align: middle; border: 1px solid #dcdcde; }
+.vhbc-move { white-space: nowrap; width: 48px; }
+.vhbc-move .button-link { font-size: 16px; text-decoration: none; padding: 0 2px; }
+#vhbc-personnes input[type="email"] { width: 100%; }
+#vhbc-personnes input[name$="[fonction]"] { min-width: 230px; }
+.vhbc-repeat:has(#vhbc-personnes), .vhbc-repeat:has(#vhbc-ag) { max-width: none; }
+
+/* Assemblées générales : une ligne par AG, champs empilés -------------- */
+.vhbc-sommaire { margin: 4px 0 0; }
+.vhbc-sommaire a { text-decoration: none; }
+.vhbc-section { scroll-margin-top: 40px; }
+#vhbc-ag td { vertical-align: top; }
+#vhbc-ag select { width: 100%; }
+#vhbc-ag td:nth-child(1) { width: 150px; }
+#vhbc-ag td:nth-child(2) { width: 150px; }
+#vhbc-ag td:nth-child(3) { min-width: 240px; }
+#vhbc-ag td:nth-child(4) { min-width: 240px; }
+#vhbc-ag .vhbc-pill { margin-top: 6px; }
+#vhbc-ag input[type="date"], #vhbc-ag input[type="text"], #vhbc-ag input[type="url"], #vhbc-ag textarea { width: 100%; }
+#vhbc-ag .vhbc-sous { margin-top: 6px; }
+#vhbc-ag textarea { min-height: 62px; }
+#vhbc-ag .vhbc-ag-cr { min-width: 220px; }
+#vhbc-ag .vhbc-file { display: flex; align-items: center; gap: 6px; }
+#vhbc-ag .vhbc-file-name { max-width: 160px; }
+@media (max-width: 1100px) {
+	.vhbc-repeat:has(#vhbc-ag) thead { display: none; }
+	#vhbc-ag tr { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; padding: 10px 0; border-bottom: 1px solid #dcdcde; }
+	#vhbc-ag td { display: block; width: auto !important; min-width: 0 !important; padding: 0 6px; }
+	#vhbc-ag td:nth-child(3), #vhbc-ag td:nth-child(4), #vhbc-ag td:nth-child(5) { grid-column: 1 / -1; }
+}
+
+/* Partenaires : réglages d'affichage des logos ------------------------- */
+.vhbc-repeat:has(#vhbc-partenaires) { max-width: none; }
+#vhbc-partenaires input[name$="[nom]"] { min-width: 200px; }
+#vhbc-partenaires input[type="url"] { min-width: 220px; }
+#vhbc-partenaires .vhbc-taille { white-space: nowrap; }
+#vhbc-partenaires .vhbc-taille select + select { margin-left: 4px; }

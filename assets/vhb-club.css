@@ -1,0 +1,466 @@
+/*
+ * VHB Club : styles front.
+ * Apparence « site » (par défaut) : reprend les variables du CSS additionnel
+ * du site (--navy2, --vhb, --text, --muted, --border, --fh, --fb), avec leurs
+ * valeurs actuelles en secours. Si le CSS du site change, les blocs suivent.
+ * Apparences « sombre », « clair », « auto » : charte de VHB Résultats.
+ * Accents : bleu #00B0E8, orange #FF6A3D.
+ * Mode sombre graphite : fond #121316, carte #1A1C20, calme #23262B, trait #2E3238.
+ *
+ * Kadence force la couleur des p, li, td, th et écrase marges et fonds :
+ * d'où les !important ciblés ci-dessous.
+ */
+
+.vhbc {
+	--vhbc-blue: #00B0E8;
+	--vhbc-orange: #FF6A3D;
+	--vhbc-blue-txt: #006C99;
+	--vhbc-orange-txt: #B33C16;
+	--vhbc-card: #FFFFFF;
+	--vhbc-calm: #F4F5F7;
+	--vhbc-line: #E3E5E8;
+	--vhbc-text: #121316;
+	--vhbc-text-2: #4A4F57;
+	--vhbc-text-3: #6B7079;
+	--vhbc-hl: rgba(0, 176, 232, .10);
+	--vhbc-ok: #1E7D4F;
+	--vhbc-font: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	--vhbc-display: "Big Shoulders Display", "Barlow Condensed", "Arial Narrow", sans-serif;
+	--vhbc-r-lg: 16px;
+	--vhbc-r-md: 12px;
+
+	font-family: var(--vhbc-font);
+	color: var(--vhbc-text);
+	line-height: 1.4;
+	margin: 0 0 24px !important;
+	container-type: inline-size;
+	container-name: vhbc;
+}
+
+.vhbc--sombre {
+	--vhbc-card: #1A1C20; --vhbc-calm: #23262B; --vhbc-line: #2E3238;
+	--vhbc-text: #F2F3F5; --vhbc-text-2: #B7BBC2; --vhbc-text-3: #868B93;
+	--vhbc-blue-txt: #00B0E8; --vhbc-orange-txt: #FF6A3D; --vhbc-hl: rgba(0, 176, 232, .16); --vhbc-ok: #4CC38A;
+}
+@media (prefers-color-scheme: dark) {
+	html:not([data-theme="light"]):not(.color-switch-light) .vhbc--auto {
+		--vhbc-card: #1A1C20; --vhbc-calm: #23262B; --vhbc-line: #2E3238;
+		--vhbc-text: #F2F3F5; --vhbc-text-2: #B7BBC2; --vhbc-text-3: #868B93;
+		--vhbc-blue-txt: #00B0E8; --vhbc-orange-txt: #FF6A3D; --vhbc-hl: rgba(0, 176, 232, .16); --vhbc-ok: #4CC38A;
+	}
+}
+html[data-theme="dark"] .vhbc--auto,
+html.color-switch-dark .vhbc--auto,
+body.vhb-dark .vhbc--auto {
+	--vhbc-card: #1A1C20; --vhbc-calm: #23262B; --vhbc-line: #2E3238;
+	--vhbc-text: #F2F3F5; --vhbc-text-2: #B7BBC2; --vhbc-text-3: #868B93;
+	--vhbc-blue-txt: #00B0E8; --vhbc-orange-txt: #FF6A3D; --vhbc-hl: rgba(0, 176, 232, .16); --vhbc-ok: #4CC38A;
+}
+
+/* Bloc posé directement dans la page : sur ce site, le contenu des pages n'a
+   aucune marge latérale (CSS additionnel). Le bloc prend alors la même
+   largeur que les autres pages (900 px centrés, 16 px de marge sur mobile).
+   Dans un groupe ou une colonne, il suit simplement son conteneur. */
+.entry-content > .vhbc {
+	box-sizing: border-box;
+	max-width: 900px;
+	margin-left: auto !important;
+	margin-right: auto !important;
+	padding-left: 16px !important;
+	padding-right: 16px !important;
+}
+.entry-content > .vhbc:first-child { margin-top: 24px !important; }
+
+.vhbc *, .vhbc *::before, .vhbc *::after { box-sizing: border-box; }
+.vhbc ul { list-style: none !important; margin: 0 !important; padding: 0 !important; }
+.vhbc li { color: inherit !important; margin: 0 !important; padding: 0; }
+.vhbc li::before, .vhbc li::marker { content: none; }
+
+/* Titres ------------------------------------------------------------- */
+.vhbc .vhbc-head { margin: 0 0 14px !important; }
+.vhbc .vhbc-kicker {
+	display: block; font-size: 12px; font-weight: 700; letter-spacing: .12em;
+	text-transform: uppercase; color: var(--vhbc-orange-txt);
+}
+.vhbc .vhbc-title {
+	font-family: var(--vhbc-display); font-weight: 800; font-size: 28px; line-height: 1.05;
+	margin: 2px 0 0 !important; padding: 0 !important; color: var(--vhbc-text) !important; text-transform: uppercase;
+}
+.vhbc .vhbc-sub { display: block; margin-top: 4px; font-size: 14px; color: var(--vhbc-text-2); }
+.vhbc .vhbc-h {
+	font-size: 12px !important; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+	color: var(--vhbc-text-2) !important; margin: 0 0 8px !important; padding: 0 !important; font-family: var(--vhbc-font);
+}
+.vhbc .vhbc-msg {
+	padding: 14px 16px; border-radius: var(--vhbc-r-md); background: var(--vhbc-calm);
+	color: var(--vhbc-text-2); font-size: 14px;
+}
+
+/* Éléments communs ----------------------------------------------------- */
+.vhbc .vhbc-tag {
+	display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 700;
+	letter-spacing: .04em; text-transform: uppercase; vertical-align: middle;
+	color: var(--vhbc-orange-txt); border: 1px solid currentColor;
+}
+.vhbc .vhbc-tag--ok { color: var(--vhbc-ok); text-transform: none; letter-spacing: 0; font-size: 12px; }
+.vhbc .vhbc-day { font-weight: 700; }
+.vhbc .vhbc-time { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.vhbc .vhbc-place {
+	display: inline-block; padding: 0 7px; border-radius: 6px; font-size: 12px; font-weight: 600;
+	background: var(--vhbc-hl); color: var(--vhbc-blue-txt); white-space: nowrap;
+}
+.vhbc .vhbc-slot-note { display: block; font-size: 12px; color: var(--vhbc-text-3); }
+.vhbc .vhbc-link { color: var(--vhbc-blue-txt) !important; text-decoration: none !important; font-weight: 600; }
+.vhbc .vhbc-link:hover, .vhbc .vhbc-link:focus-visible { text-decoration: underline !important; }
+.vhbc .vhbc-muted { font-size: 13px; color: var(--vhbc-text-3); }
+.vhbc .vhbc-desc { font-size: 15px; color: var(--vhbc-text-2); margin: 0 0 12px; white-space: pre-line; }
+
+.vhbc .vhbc-card {
+	background: var(--vhbc-card) !important; border: 1px solid var(--vhbc-line);
+	border-radius: var(--vhbc-r-lg); padding: 18px 20px !important; margin: 0 !important;
+}
+
+/* Planning : tableau ---------------------------------------------------- */
+.vhbc .vhbc-table-wrap {
+	background: var(--vhbc-card); border: 1px solid var(--vhbc-line); border-radius: var(--vhbc-r-lg);
+	overflow: hidden;
+}
+.vhbc .vhbc-table { width: 100%; border-collapse: collapse; margin: 0 !important; border: 0 !important; font-size: 14px; }
+.vhbc .vhbc-table th,
+.vhbc .vhbc-table td {
+	padding: 12px 14px !important; text-align: left; vertical-align: top; border: 0 !important;
+	border-bottom: 1px solid var(--vhbc-line) !important; background: transparent !important;
+	color: var(--vhbc-text) !important;
+}
+.vhbc .vhbc-table tbody tr:last-child > * { border-bottom: 0 !important; }
+.vhbc .vhbc-table thead th {
+	font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+	color: var(--vhbc-text-3) !important; background: var(--vhbc-calm) !important;
+}
+.vhbc .vhbc-table .vhbc-c-cat { width: 26%; }
+.vhbc .vhbc-table .vhbc-c-annees { width: 18%; color: var(--vhbc-text-2) !important; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.vhbc .vhbc-cat { font-weight: 800; }
+.vhbc .vhbc-table .vhbc-c-cat .vhbc-tag { margin-left: 4px; }
+.vhbc .vhbc-table .vhbc-group th {
+	background: var(--vhbc-hl) !important; color: var(--vhbc-blue-txt) !important;
+	font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; padding: 8px 14px !important;
+}
+.vhbc .vhbc-slots { display: flex; flex-direction: column; gap: 6px; }
+.vhbc .vhbc-slots .vhbc-day { display: inline-block; min-width: 76px; }
+
+@container vhbc (max-width: 599px) {
+	.vhbc .vhbc-table thead { display: none; }
+	.vhbc .vhbc-table, .vhbc .vhbc-table tbody, .vhbc .vhbc-table tr { display: block; width: 100%; }
+	.vhbc .vhbc-table tr { padding: 12px 14px; border-bottom: 1px solid var(--vhbc-line); }
+	.vhbc .vhbc-table tbody tr:last-child { border-bottom: 0; }
+	.vhbc .vhbc-table th, .vhbc .vhbc-table td { display: block; width: auto !important; padding: 0 !important; border: 0 !important; }
+	.vhbc .vhbc-table .vhbc-c-cat { display: inline; font-size: 16px; }
+	.vhbc .vhbc-table .vhbc-c-annees { display: inline; margin-left: 8px; font-size: 13px; }
+	.vhbc .vhbc-table .vhbc-c-slots { margin-top: 8px; }
+	.vhbc .vhbc-table .vhbc-group { padding: 0; }
+	.vhbc .vhbc-table .vhbc-group th { padding: 8px 14px !important; }
+}
+
+/* Planning : par jour ---------------------------------------------------- */
+.vhbc .vhbc-days { display: grid; gap: 12px; grid-template-columns: 1fr; align-items: start; }
+.vhbc .vhbc-slots .vhbc-slot, .vhbc .vhbc-legend-item { font-size: inherit !important; }
+@container vhbc (min-width: 600px) { .vhbc .vhbc-days { grid-template-columns: repeat(2, 1fr); } }
+@container vhbc (min-width: 900px) { .vhbc .vhbc-days { grid-template-columns: repeat(3, 1fr); } }
+@container vhbc (min-width: 1100px) { .vhbc .vhbc-days { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); } }
+.vhbc .vhbc-day-col {
+	background: var(--vhbc-card); border: 1px solid var(--vhbc-line); border-radius: var(--vhbc-r-lg);
+	padding: 14px !important; margin: 0 !important;
+}
+.vhbc .vhbc-day-col .vhbc-h { color: var(--vhbc-orange-txt) !important; }
+.vhbc .vhbc-day-list { display: flex; flex-direction: column; gap: 8px; }
+.vhbc .vhbc-day-item {
+	display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px;
+	padding: 8px 10px !important; border-radius: var(--vhbc-r-md); background: var(--vhbc-calm);
+	font-size: 14px;
+}
+.vhbc .vhbc-day-item .vhbc-time { flex-basis: 100%; font-size: 13px; color: var(--vhbc-text-2); }
+
+/* Lieux sous le planning ----------------------------------------------- */
+.vhbc .vhbc-legend { margin-top: 14px; font-size: 13px; color: var(--vhbc-text-2); }
+.vhbc .vhbc-legend .vhbc-h { margin-bottom: 6px !important; }
+.vhbc .vhbc-legend-list { display: flex; flex-direction: column; gap: 4px; }
+.vhbc .vhbc-legend-nom { color: var(--vhbc-text); font-weight: 600; }
+
+/* Fiche catégorie ------------------------------------------------------- */
+.vhbc .vhbc-entente { font-size: 14px; color: var(--vhbc-text-2); margin: 0 0 14px; }
+.vhbc .vhbc-slots--card { gap: 8px; }
+.vhbc .vhbc-slots--card .vhbc-slot {
+	display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; font-size: 15px !important; line-height: 1.4;
+	padding: 10px 12px !important; border-radius: var(--vhbc-r-md); background: var(--vhbc-calm);
+}
+.vhbc .vhbc-slots--card .vhbc-day { min-width: 76px; }
+.vhbc .vhbc-slot-place { font-size: 13px; color: var(--vhbc-text-2); }
+.vhbc .vhbc-slots--card .vhbc-slot-note { flex-basis: 100%; }
+
+/* Gymnase ---------------------------------------------------------------- */
+.vhbc .vhbc-lieux--grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@container vhbc (min-width: 640px) { .vhbc .vhbc-lieux--grid { grid-template-columns: repeat(2, 1fr); } }
+@container vhbc (min-width: 980px) { .vhbc .vhbc-lieux--grid { grid-template-columns: repeat(3, 1fr); } }
+.vhbc .vhbc-lieu { display: flex; flex-direction: column; gap: 8px; }
+.vhbc .vhbc-lieu .vhbc-head { margin-bottom: 2px !important; }
+.vhbc .vhbc-lieu .vhbc-title { font-size: 22px; }
+.vhbc .vhbc-addr { font-size: 15px; color: var(--vhbc-text); }
+.vhbc .vhbc-lieu .vhbc-desc { font-size: 14px; margin: 0; }
+.vhbc .vhbc-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.vhbc .vhbc-btn {
+	display: inline-block; padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 700;
+	text-decoration: none !important; background: var(--vhbc-blue); color: #04232E !important; line-height: 1.2;
+}
+.vhbc .vhbc-btn--ghost { background: transparent; color: var(--vhbc-text) !important; border: 1px solid var(--vhbc-line); }
+.vhbc .vhbc-btn:focus-visible { outline: 2px solid var(--vhbc-blue); outline-offset: 2px; }
+
+
+/* Apparence « site » : CSS général du site ------------------------------ */
+.vhbc--site {
+	--vhbc-blue: var(--vhb, #4FAAD5);
+	--vhbc-blue-txt: var(--vhb, #4FAAD5);
+	--vhbc-orange: var(--accent, #F0B429);
+	--vhbc-orange-txt: var(--accent, #F0B429);
+	--vhbc-card: var(--navy2, #0F1520);
+	--vhbc-calm: rgba(255, 255, 255, .035);
+	--vhbc-line: var(--border, rgba(79, 170, 213, .15));
+	--vhbc-text: var(--text, #DDE4EC);
+	--vhbc-text-2: var(--silver, #B8C4CC);
+	--vhbc-text-3: var(--muted, #7A8899);
+	--vhbc-hl: rgba(79, 170, 213, .15);
+	--vhbc-ok: var(--vhb, #4FAAD5);
+	--vhbc-font: var(--fb, 'Barlow', sans-serif);
+	--vhbc-display: var(--fh, 'Barlow Condensed', sans-serif);
+	--vhbc-r-lg: 12px;
+	--vhbc-r-md: var(--radius, 10px);
+}
+.vhbc--site .vhbc-kicker { font-family: var(--vhbc-display); font-size: 11px; letter-spacing: 2px; color: var(--vhbc-blue); }
+.vhbc--site .vhbc-title { font-weight: 900; color: #fff !important; letter-spacing: 0; }
+.vhbc--site .vhbc-head > .vhbc-title::after {
+	content: ''; display: block; width: 32px; height: 2px; background: var(--vhbc-blue); margin-top: 4px; border-radius: 2px;
+}
+.vhbc--site .vhbc-card .vhbc-title { font-size: 20px; font-weight: 800; }
+.vhbc--site .vhbc-card .vhbc-head > .vhbc-title::after { display: none; }
+.vhbc--site .vhbc-sub { font-size: 13px; color: var(--vhbc-text-3); }
+.vhbc--site .vhbc-h {
+	font-family: var(--vhbc-display) !important; font-size: 17px !important; font-weight: 800; letter-spacing: .3px;
+	color: var(--vhbc-blue) !important;
+}
+.vhbc--site .vhbc-tag {
+	font-family: var(--vhbc-display); font-size: 10px; letter-spacing: .5px; padding: 3px 10px; border: 0;
+	border-radius: 12px; background: rgba(184, 196, 204, .12); color: var(--vhbc-text-2);
+}
+.vhbc--site .vhbc-tag--ok { background: var(--vhbc-hl); color: var(--vhbc-blue); text-transform: uppercase; letter-spacing: .5px; font-size: 10px; }
+.vhbc--site .vhbc-place {
+	font-family: var(--vhbc-display); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+	padding: 2px 9px; border-radius: 12px;
+}
+.vhbc--site .vhbc-day, .vhbc--site .vhbc-time, .vhbc--site .vhbc-cat {
+	font-family: var(--vhbc-display); font-size: 16px; letter-spacing: .2px;
+}
+.vhbc--site .vhbc-day { font-weight: 700; color: #fff; }
+.vhbc--site .vhbc-cat { font-weight: 800; color: #fff; text-transform: uppercase; }
+.vhbc--site .vhbc-time { font-weight: 700; color: var(--vhbc-blue); }
+.vhbc--site .vhbc-table thead th { font-family: var(--vhbc-display); font-size: 12px; letter-spacing: 1px; color: var(--vhbc-text-3) !important; background: transparent !important; }
+.vhbc--site .vhbc-table .vhbc-group th { font-family: var(--vhbc-display); font-size: 13px; letter-spacing: 1.5px; color: var(--vhbc-blue) !important; background: rgba(79, 170, 213, .08) !important; }
+.vhbc--site .vhbc-day-col .vhbc-h { color: #fff !important; }
+.vhbc--site .vhbc-day-col .vhbc-h::after { content: ''; display: block; width: 24px; height: 2px; background: var(--vhbc-blue); margin-top: 3px; border-radius: 2px; }
+.vhbc--site .vhbc-btn {
+	font-family: var(--vhbc-display); font-size: 12px; text-transform: uppercase; letter-spacing: .5px;
+	padding: 7px 14px; border-radius: 7px; background: rgba(79, 170, 213, .12); color: var(--vhbc-blue) !important;
+	border: 1px solid rgba(79, 170, 213, .3);
+}
+.vhbc--site .vhbc-btn:hover { background: rgba(79, 170, 213, .22); border-color: var(--vhbc-blue); }
+.vhbc--site .vhbc-btn--ghost { background: transparent; color: var(--vhbc-text-2) !important; border-color: var(--vhbc-line); }
+.vhbc--site .vhbc-card:hover { border-color: rgba(79, 170, 213, .35); }
+.vhbc--site .vhbc-addr { font-size: 14px; }
+
+/* Étiquettes de statut (toutes apparences) */
+.vhbc .vhbc-tag--complet { background: var(--vhbc-orange); color: #1A1000; border-color: var(--vhbc-orange); }
+.vhbc .vhbc-tag--attente { color: var(--vhbc-orange-txt); border: 1px solid currentColor; background: transparent; }
+.vhbc--site .vhbc-tag--attente { border: 1px solid var(--vhbc-orange); color: var(--vhbc-orange); }
+
+/* Tarifs ---------------------------------------------------------------- */
+.vhbc .vhbc-tarifs .vhbc-c-prix { text-align: right !important; white-space: nowrap; width: 1%; }
+.vhbc .vhbc-tarifs td.vhbc-c-prix { font-family: var(--vhbc-display); font-size: 20px; font-weight: 800; color: var(--vhbc-text) !important; }
+.vhbc--site .vhbc-tarifs td.vhbc-c-prix { color: #fff !important; }
+.vhbc .vhbc-tarifs .vhbc-c-inclus { font-size: 13px; color: var(--vhbc-text-2) !important; }
+.vhbc .vhbc-tarifs .vhbc-c-cat { width: auto; }
+.vhbc .vhbc-tarifs .vhbc-autre { background: var(--vhbc-calm); }
+.vhbc .vhbc-tarifs .vhbc-autre .vhbc-cat { text-transform: none; }
+.vhbc .vhbc-mention { margin-top: 8px; font-size: 12px; color: var(--vhbc-text-3); }
+@container vhbc (max-width: 599px) {
+	.vhbc .vhbc-tarifs tr { display: grid !important; grid-template-columns: 1fr auto; column-gap: 12px; align-items: baseline; }
+	.vhbc .vhbc-tarifs .vhbc-c-cat { grid-column: 1; grid-row: 1; }
+	.vhbc .vhbc-tarifs .vhbc-c-prix { grid-column: 2; grid-row: 1 / span 2; align-self: center; width: auto !important; }
+	.vhbc .vhbc-tarifs .vhbc-c-annees { grid-column: 1; margin: 2px 0 0 !important; display: block; }
+	.vhbc .vhbc-tarifs .vhbc-c-inclus { grid-column: 1 / -1; margin-top: 4px; }
+}
+
+/* Panneaux (réductions, paiement, pièces, documents) ------------------- */
+.vhbc .vhbc-panels { display: grid; gap: 12px; grid-template-columns: 1fr; align-items: start; }
+@container vhbc (min-width: 640px) { .vhbc .vhbc-panels { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); } }
+.vhbc .vhbc-panel .vhbc-h { margin-bottom: 10px !important; }
+.vhbc .vhbc-p { margin: 0 !important; font-size: 15px; color: var(--vhbc-text) !important; line-height: 1.55; }
+.vhbc .vhbc-p.vhbc-muted { margin-top: 10px !important; font-size: 13px; color: var(--vhbc-text-3) !important; }
+.vhbc .vhbc-list { display: flex; flex-direction: column; gap: 8px; }
+.vhbc .vhbc-list li { font-size: 15px !important; line-height: 1.5; color: var(--vhbc-text) !important; }
+.vhbc .vhbc-list--check li { position: relative; padding-left: 22px !important; }
+.vhbc .vhbc-list--check li::before {
+	content: ''; position: absolute; left: 3px; top: .5em; width: 9px; height: 5px;
+	border-left: 2px solid var(--vhbc-blue); border-bottom: 2px solid var(--vhbc-blue); transform: rotate(-45deg);
+}
+.vhbc .vhbc-list--reduc li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; padding: 10px 12px !important; border-radius: var(--vhbc-r-md); background: var(--vhbc-calm); }
+.vhbc .vhbc-list-label { font-weight: 700; }
+.vhbc--site .vhbc-list-label { font-family: var(--vhbc-display); font-size: 16px; text-transform: uppercase; color: #fff; }
+.vhbc .vhbc-amount { font-family: var(--vhbc-display); font-weight: 800; font-size: 18px; color: var(--vhbc-blue-txt); white-space: nowrap; }
+.vhbc .vhbc-list-text { font-size: 14px; color: var(--vhbc-text-2); }
+.vhbc .vhbc-docs li { padding: 0 !important; }
+.vhbc .vhbc-doc {
+	display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--vhbc-r-md);
+	background: var(--vhbc-calm); border: 1px solid var(--vhbc-line); text-decoration: none !important; color: var(--vhbc-text) !important;
+}
+.vhbc .vhbc-doc:hover, .vhbc .vhbc-doc:focus-visible { border-color: var(--vhbc-blue); }
+.vhbc .vhbc-doc-ico {
+	flex: 0 0 auto; min-width: 40px; padding: 6px 4px; border-radius: 6px; text-align: center; background: var(--vhbc-hl);
+	color: var(--vhbc-blue-txt); font-family: var(--vhbc-display); font-size: 11px; font-weight: 800; letter-spacing: .5px;
+}
+.vhbc .vhbc-doc-t { font-weight: 600; font-size: 15px; }
+
+/* Fiche catégorie : licence, équipement, essai --------------------------- */
+.vhbc .vhbc-facts { display: grid; gap: 6px; margin: 14px 0 0 !important; padding: 12px 0 0 !important; border-top: 1px solid var(--vhbc-line); }
+.vhbc .vhbc-fact { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: baseline; }
+.vhbc .vhbc-fact dt { margin: 0; font-family: var(--vhbc-display); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--vhbc-text-3); }
+.vhbc .vhbc-fact dd { margin: 0; font-size: 14px; color: var(--vhbc-text); }
+
+/* Bandeau inscriptions (même dessin que le bandeau de l'accueil) ----------- */
+.vhbc .vhbc-promo {
+	display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px;
+	border-radius: var(--vhbc-r-md); background: rgba(79, 170, 213, .1); border: 1px solid rgba(79, 170, 213, .25);
+}
+.vhbc .vhbc-promo-txt { display: flex; flex-direction: column; }
+.vhbc .vhbc-promo-t { font-family: var(--vhbc-display); font-size: 16px; font-weight: 800; text-transform: uppercase; color: var(--vhbc-text); }
+.vhbc--site .vhbc-promo-t { color: #fff; }
+.vhbc .vhbc-promo-s { font-size: 12px; color: var(--vhbc-text-3); margin-top: 2px; }
+.vhbc .vhbc-promo-btn {
+	flex-shrink: 0; padding: 8px 14px; border-radius: 6px; background: var(--vhbc-blue); color: #fff !important;
+	font-family: var(--vhbc-display); font-size: 12px; font-weight: 800; text-transform: uppercase; text-decoration: none !important; white-space: nowrap;
+}
+.vhbc .vhbc-promo-btn:hover { filter: brightness(1.1); }
+
+/* Stages ----------------------------------------------------------------- */
+.vhbc .vhbc-stages { display: flex; flex-direction: column; gap: 14px; }
+.vhbc .vhbc-stage .vhbc-title .vhbc-tag { vertical-align: middle; margin-left: 6px; }
+.vhbc .vhbc-facts--top { margin-top: 0 !important; padding-top: 0 !important; border-top: 0; }
+.vhbc .vhbc-mini { width: 100%; border-collapse: collapse; margin: 14px 0 0 !important; border: 0 !important; font-size: 14px; }
+.vhbc .vhbc-mini th, .vhbc .vhbc-mini td {
+	padding: 8px 10px !important; border: 0 !important; border-bottom: 1px solid var(--vhbc-line) !important;
+	background: transparent !important; color: var(--vhbc-text) !important; text-align: left;
+}
+.vhbc .vhbc-mini thead th { font-family: var(--vhbc-display); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--vhbc-text-3) !important; }
+.vhbc .vhbc-mini td { text-align: right; font-family: var(--vhbc-display); font-weight: 800; font-size: 17px; white-space: nowrap; }
+.vhbc .vhbc-mini thead th:not(:first-child) { text-align: right; }
+.vhbc .vhbc-mini tbody th { font-weight: 600; }
+.vhbc .vhbc-conditions { margin: 12px 0 0 !important; display: flex; flex-direction: column; gap: 4px; }
+.vhbc .vhbc-conditions li { font-size: 13px !important; color: var(--vhbc-text-3) !important; line-height: 1.5; }
+.vhbc .vhbc-actions { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.vhbc .vhbc-actions .vhbc-promo-btn { display: inline-block; font-size: 14px; padding: 10px 18px; }
+.vhbc .vhbc-widget { display: block; width: 100%; height: 750px; border: 0; margin-top: 14px; border-radius: var(--vhbc-r-md); background: #fff; }
+
+/* Stages : lignes courtes (même dessin que la carte Stages de l'accueil) */
+.vhbc .vhbc-stage-list { display: flex; flex-direction: column; gap: 6px; }
+.vhbc .vhbc-stage-line {
+	display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0 10px; padding: 11px 13px; border-radius: var(--vhbc-r-md);
+	background: rgba(240, 180, 41, .06); border: 1.5px solid rgba(240, 180, 41, .5); border-left: 3px solid var(--vhbc-orange);
+	text-decoration: none !important; color: var(--vhbc-text) !important;
+}
+.vhbc a.vhbc-stage-line:hover { background: rgba(240, 180, 41, .1); }
+.vhbc .vhbc-star { color: var(--vhbc-orange); }
+.vhbc .vhbc-stage-name { font-family: var(--vhbc-display); font-weight: 800; font-size: 15px; text-transform: uppercase; color: #fff; }
+.vhbc .vhbc-stage-txt { display: flex; flex-direction: column; min-width: 0; }
+.vhbc .vhbc-stage-info { font-size: 12px; color: var(--vhbc-text-3); }
+.vhbc .vhbc-chev { color: var(--vhbc-text-3); font-size: 22px; line-height: 1; }
+.vhbc .vhbc-alert .vhbc-chev { margin-left: auto; }
+
+/* Alertes ----------------------------------------------------------------- */
+.vhbc .vhbc-alerts { display: flex; flex-direction: column; gap: 8px; }
+.vhbc .vhbc-alert { border-radius: var(--vhbc-r-md); background: var(--vhbc-hl); border: 1px solid rgba(79, 170, 213, .35); }
+.vhbc .vhbc-alert > a, .vhbc .vhbc-alert { display: flex; align-items: center; gap: 12px; padding: 11px 14px; color: var(--vhbc-text) !important; text-decoration: none !important; }
+.vhbc .vhbc-alert > a { padding: 0; width: 100%; }
+.vhbc .vhbc-alert-ico {
+	flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+	background: var(--vhbc-blue); color: #0A1520; font-family: var(--vhbc-display); font-weight: 900; font-size: 14px;
+}
+.vhbc .vhbc-alert-t { font-size: 15px; font-weight: 600; }
+.vhbc .vhbc-alert--important { background: rgba(240, 180, 41, .08); border-color: rgba(240, 180, 41, .55); }
+.vhbc .vhbc-alert--important .vhbc-alert-ico { background: var(--vhbc-orange); color: #1A1000; }
+
+/* Organigramme (même dessin que la page « Qui fait quoi ? ») ------------- */
+.vhbc .vhbc-orga-group + .vhbc-orga-group { margin-top: 18px; }
+.vhbc .vhbc-people { display: grid; gap: 8px; grid-template-columns: 1fr; }
+@container vhbc (min-width: 560px) { .vhbc .vhbc-people { grid-template-columns: repeat(2, 1fr); } }
+@container vhbc (min-width: 860px) { .vhbc .vhbc-people { grid-template-columns: repeat(3, 1fr); } }
+.vhbc .vhbc-person {
+	display: flex; align-items: center; gap: 12px; padding: 12px 14px !important; border-radius: var(--vhbc-r-md);
+	background: var(--vhbc-card); border: 1px solid var(--vhbc-line);
+}
+.vhbc .vhbc-avatar {
+	flex: 0 0 auto; width: 44px; height: 44px; border-radius: 50%; object-fit: cover; display: inline-flex; align-items: center; justify-content: center;
+	background: var(--vhbc-hl); color: var(--vhbc-blue); font-family: var(--vhbc-display); font-weight: 800; font-size: 16px; letter-spacing: .5px;
+}
+.vhbc .vhbc-person-txt { display: flex; flex-direction: column; min-width: 0; }
+.vhbc .vhbc-person-nom { font-family: var(--vhbc-display); font-weight: 800; font-size: 16px; text-transform: uppercase; color: var(--vhbc-text); }
+.vhbc--site .vhbc-person-nom { color: #fff; }
+.vhbc .vhbc-person-fn { font-size: 13px; color: var(--vhbc-text-2); }
+.vhbc .vhbc-person-mail { font-size: 12px; overflow-wrap: anywhere; }
+
+/* Assemblées générales ------------------------------------------------------ */
+.vhbc .vhbc-ag { display: flex; flex-direction: column; gap: 10px; }
+.vhbc .vhbc-ag-item { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px !important; }
+.vhbc .vhbc-ag-item.is-past { opacity: .75; }
+.vhbc .vhbc-ag-date {
+	flex: 0 0 64px; display: flex; flex-direction: column; align-items: center; padding: 6px 0; border-radius: 8px; background: var(--vhbc-hl);
+}
+.vhbc .vhbc-ag-d { font-family: var(--vhbc-display); font-size: 24px; font-weight: 900; line-height: 1; color: var(--vhbc-text); }
+.vhbc--site .vhbc-ag-d { color: #fff; }
+.vhbc .vhbc-ag-m { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--vhbc-blue-txt); text-align: center; }
+.vhbc .vhbc-ag-y { font-size: 10px; color: var(--vhbc-text-3); }
+.vhbc .vhbc-ag-body { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; min-width: 0; }
+.vhbc .vhbc-ag-t { font-family: var(--vhbc-display); font-weight: 800; font-size: 18px; text-transform: uppercase; color: var(--vhbc-text); }
+.vhbc--site .vhbc-ag-t { color: #fff; }
+.vhbc .vhbc-ag-meta { font-size: 14px; color: var(--vhbc-text-2); }
+.vhbc .vhbc-ag-body .vhbc-btn { margin-top: 6px; }
+
+/* Partenaires --------------------------------------------------------------- */
+.vhbc .vhbc-partners-group + .vhbc-partners-group { margin-top: 18px; }
+.vhbc .vhbc-partners { display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); }
+@container vhbc (min-width: 560px) { .vhbc .vhbc-partners { grid-template-columns: repeat(4, 1fr); } .vhbc .vhbc-partners--principal { grid-template-columns: repeat(2, 1fr); } }
+.vhbc .vhbc-partner > a, .vhbc .vhbc-partner > img, .vhbc .vhbc-partner > .vhbc-partner-nom {
+	display: flex; align-items: center; justify-content: center; height: 96px; padding: 14px; border-radius: var(--vhbc-r-md);
+	background: rgba(255, 255, 255, .04); border: 1px solid var(--vhbc-line); text-decoration: none !important;
+}
+.vhbc .vhbc-partners--principal .vhbc-partner > a, .vhbc .vhbc-partners--principal .vhbc-partner > img { height: 130px; }
+.vhbc .vhbc-partner a:hover { border-color: rgba(79, 170, 213, .4); }
+.vhbc .vhbc-partner img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+.vhbc .vhbc-partner-nom { font-family: var(--vhbc-display); font-weight: 700; text-transform: uppercase; color: var(--vhbc-text); text-align: center; font-size: 14px; }
+
+/* Mentions légales ----------------------------------------------------------- */
+.vhbc .vhbc-legal { display: flex; flex-direction: column; gap: 18px; }
+.vhbc .vhbc-legal-sec .vhbc-p + .vhbc-p { margin-top: 6px !important; }
+
+/* Prochain match (fiche catégorie, données VHB Résultats) ---------------- */
+.vhbc .vhbc-matches { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px !important; }
+.vhbc .vhbc-match {
+	display: flex; flex-direction: column; gap: 2px; padding: 10px 12px !important; border-radius: var(--vhbc-r-md);
+	background: var(--vhbc-calm); border-left: 3px solid var(--vhbc-blue);
+}
+.vhbc .vhbc-match-eq { font-family: var(--vhbc-display); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--vhbc-text-3); }
+.vhbc .vhbc-match-when { font-family: var(--vhbc-display); font-weight: 700; font-size: 16px; color: var(--vhbc-blue-txt); }
+.vhbc .vhbc-match-vs { font-size: 15px; color: var(--vhbc-text); }
+.vhbc--site .vhbc-match-vs { color: #fff; }
+.vhbc .vhbc-match-lieu { font-size: 13px; color: var(--vhbc-text-3); }
+
+.vhbc .vhbc-slots--card + .vhbc-h { margin-top: 16px !important; }
+
+/* Donnée isolée ----------------------------------------------------------- */
+.vhbc-info--vide { color: #B33C16; font-style: italic; }
