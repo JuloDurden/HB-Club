@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'VHB_CLUB_VERSION', '3.0.0' );
+define( 'VHB_CLUB_VERSION', '3.0.1' );
 define( 'VHB_CLUB_DIR', plugin_dir_path( VHB_CLUB_FILE ) );
 define( 'VHB_CLUB_URL', plugin_dir_url( VHB_CLUB_FILE ) );
 if ( ! defined( 'VHB_MARQUE' ) ) {
@@ -36,6 +36,7 @@ require_once VHB_CLUB_DIR . 'includes/class-vhb-club-pages.php';
 require_once VHB_CLUB_DIR . 'includes/class-vhb-club-blocks.php';
 require_once VHB_CLUB_DIR . 'includes/class-vhb-club-demarrage.php';
 require_once VHB_CLUB_DIR . 'includes/class-vhb-club-photos.php';
+require_once VHB_CLUB_DIR . 'includes/class-vhb-club-articles.php';
 require_once VHB_CLUB_DIR . 'includes/class-vhb-fusion.php';
 
 /*
@@ -99,6 +100,7 @@ add_action(
 		VHB_Club_Types::init();
 		VHB_Club_Stages::init();
 		VHB_Club_Photos::init();
+		VHB_Club_Articles::init();
 		VHB_Club_Ffhb::init();
 		VHB_Club_Cache::init();
 		VHB_Club_Render::init();

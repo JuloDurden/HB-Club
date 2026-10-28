@@ -3,7 +3,7 @@ Contributors: julodurden
 Tags: handball, club, sport, ffhb, résultats
 Requires at least: 6.1
 Requires PHP: 7.4
-Stable tag: 3.0.0
+Stable tag: 3.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
@@ -126,6 +126,10 @@ Copyright (C) 2026 Julien Clavel.
 Ce programme est un logiciel libre : vous pouvez le redistribuer et le modifier selon les termes de la Licence publique générale GNU (GPL) publiée par la Free Software Foundation, version 2 ou (à votre choix) toute version ultérieure. Il est distribué sans aucune garantie. Texte complet : fichier LICENSE.
 
 == Journal des versions ==
+
+= 3.0.1 =
+* Stages et événements : champs « Présentation » et « Article lié », transmis aux données des pages (agenda de la page Actualités).
+* Articles : champ « Sous-titre » (méta vhb_sous_titre, lisible par l'API REST), pour la liste des actualités et le gabarit d'article.
 
 = 3.0.0 =
 * Première version publique. Issue de l'extension VHB 2.0.2 du Villeneuve Handball (elle-même née de VHB Résultats FFHB 1.0.0 à 1.4.0 et VHB Club 1.0.0 à 1.5.2), débarrassée des données propres à ce club.

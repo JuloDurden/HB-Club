@@ -47,6 +47,9 @@ class VHB_Club_Stages {
 			'helloasso'  => (string) $m( 'helloasso' ),
 			'limite'     => (string) $m( 'limite' ),
 			'complet'    => (bool) $m( 'complet', false ),
+			// 3.0.1 : texte de présentation et article du site lié (agenda de la page Actualités).
+			'presentation' => (string) $m( 'presentation' ),
+			'article'      => (int) $m( 'article', 0 ),
 		);
 		if ( '' === $s['fin'] ) {
 			$s['fin'] = $s['debut'];
@@ -168,6 +171,22 @@ class VHB_Club_Stages {
 				<textarea id="vhbc-sinfos" name="vhbc_stage[infos]" rows="3" class="large-text" placeholder="ex. Repas tiré du sac, prévoir une gourde"><?php echo esc_textarea( implode( "\n", $s['infos'] ) ); ?></textarea>
 				<p class="description">Une info par ligne.</p>
 			</td></tr>
+			<tr><th scope="row"><label for="vhbc-spres">Présentation</label></th><td>
+				<textarea id="vhbc-spres" name="vhbc_stage[presentation]" rows="3" class="large-text" placeholder="ex. Le club se mobilise pour Octobre Rose : les équipes jouent en rose et plusieurs animations sont organisées au gymnase."><?php echo esc_textarea( $s['presentation'] ); ?></textarea>
+				<p class="description">Deux ou trois phrases, affichées dans l'agenda du club. Les infos pratiques ci-dessus s'affichent en points.</p>
+			</td></tr>
+			<tr><th scope="row"><label for="vhbc-sart">Article lié</label></th><td>
+				<select id="vhbc-sart" name="vhbc_stage[article]">
+					<option value="0">(aucun)</option>
+					<?php
+					$arts = get_posts( array( 'post_type' => 'post', 'post_status' => array( 'publish', 'future', 'draft' ), 'posts_per_page' => 100, 'orderby' => 'date', 'order' => 'DESC', 'suppress_filters' => true ) );
+					foreach ( $arts as $a ) :
+						?>
+						<option value="<?php echo (int) $a->ID; ?>" <?php selected( $s['article'], $a->ID ); ?>><?php echo esc_html( get_the_title( $a ) . ( 'publish' === $a->post_status ? '' : ' (non publié)' ) ); ?></option>
+					<?php endforeach; ?>
+				</select>
+				<p class="description">Facultatif. L'agenda affiche « Lire l'article » ; sans article ni lien HelloAsso, pas de bouton.</p>
+			</td></tr>
 			<tr><th scope="row"><label for="vhbc-sha">Lien HelloAsso</label></th><td>
 				<input type="url" id="vhbc-sha" name="vhbc_stage[helloasso]" value="<?php echo esc_attr( $s['helloasso'] ); ?>" class="large-text" placeholder="https://www.helloasso.com/associations/…">
 				<p class="description">Page de la billetterie. Le bloc affiche le bouton « Réserver », et le formulaire HelloAsso si l'option est cochée dans le bloc.</p>
@@ -264,6 +283,8 @@ class VHB_Club_Stages {
 			'helloasso'  => $ha,
 			'limite'     => $date( $in['limite'] ?? '' ),
 			'complet'    => empty( $in['complet'] ) ? '' : '1',
+			'presentation' => sanitize_textarea_field( (string) ( $in['presentation'] ?? '' ) ),
+			'article'      => absint( $in['article'] ?? 0 ),
 		);
 		foreach ( $vals as $k => $v ) {
 			VHB_Club_Types::set_meta( $post_id, $k, $v );

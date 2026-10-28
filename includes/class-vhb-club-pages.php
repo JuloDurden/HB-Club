@@ -747,6 +747,11 @@ class VHB_Club_Pages {
 				'limite'     => $s['limite'],
 				'complet'    => $s['complet'],
 				'affiche'    => $affiche,
+				// 3.0.1 : agenda de la page Actualités.
+				'presentation' => $s['presentation'],
+				'article'      => ( $s['article'] && 'publish' === get_post_status( $s['article'] ) )
+					? array( 'titre' => html_entity_decode( get_the_title( $s['article'] ), ENT_QUOTES, 'UTF-8' ), 'url' => get_permalink( $s['article'] ) )
+					: null,
 			);
 		}
 		return $out;
