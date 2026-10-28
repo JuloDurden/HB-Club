@@ -3,7 +3,7 @@ Contributors: julodurden
 Tags: handball, club, sport, ffhb, résultats
 Requires at least: 6.1
 Requires PHP: 7.4
-Stable tag: 3.1.0
+Stable tag: 3.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
@@ -126,6 +126,9 @@ Copyright (C) 2026 Julien Clavel.
 Ce programme est un logiciel libre : vous pouvez le redistribuer et le modifier selon les termes de la Licence publique générale GNU (GPL) publiée par la Free Software Foundation, version 2 ou (à votre choix) toute version ultérieure. Il est distribué sans aucune garantie. Texte complet : fichier LICENSE.
 
 == Journal des versions ==
+
+= 3.2.0 =
+* Données des pages : « breves » (alertes en cours de Vie du club : message, lien, niveau) et « boutique » (si elle est ouverte : titre, texte, lien), pour la page d'accueil de la refonte.
 
 = 3.1.0 =
 * Événements (ex « Stages ») : tous les événements du club dans un seul menu. Types : Stage, Tournoi, Loto, Assemblée générale, Fête / soirée du club, Action solidaire, Autre événement. Colonne « Type » dans la liste.

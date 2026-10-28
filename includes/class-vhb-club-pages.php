@@ -678,6 +678,16 @@ class VHB_Club_Pages {
 			'organigramme' => self::organigramme(),
 			// 2.0.2 : page « Stages ».
 			'stages'       => self::stages( $debut ),
+			// 3.2.0 : page d'accueil (brèves = alertes en cours, boutique si elle est ouverte).
+			'breves'       => array_map(
+				static function ( $a ) {
+					return array( 'message' => $a['message'], 'lien' => $a['lien'], 'niveau' => $a['niveau'] );
+				},
+				class_exists( 'VHB_Club_Vie' ) ? VHB_Club_Vie::alertes_actives() : array()
+			),
+			'boutique'     => ( class_exists( 'VHB_Club_Vie' ) && ( $b = VHB_Club_Vie::boutique_active() ) )
+				? array( 'titre' => $b['titre'], 'texte' => $b['texte'], 'url' => $b['url'] )
+				: null,
 		);
 	}
 
