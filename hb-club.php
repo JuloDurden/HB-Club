@@ -3,7 +3,7 @@
  * Plugin Name:       HB Club
  * Plugin URI:        https://github.com/JuloDurden/HB-Club
  * Description:       Console d'un club de handball : saisons, gymnases, clubs en entente, catégories, créneaux, tarifs, inscriptions, stages, organigramme, vie du club, photos d'équipe, et résultats, calendriers et classements récupérés automatiquement sur le site de la FFHB. Chaque information est saisie une seule fois et s'affiche partout sur le site (blocs Gutenberg et shortcodes).
- * Version:           3.0.1
+ * Version:           3.1.0
  * Requires at least: 6.1
  * Requires PHP:      7.4
  * Author:            Julien Clavel

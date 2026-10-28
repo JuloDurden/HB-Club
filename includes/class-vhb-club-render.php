@@ -633,7 +633,7 @@ class VHB_Club_Render {
 				$val = $p ? VHB_Club_Vie::nom( $p ) : '';
 				break;
 			case 'prochain_stage':
-				$st = VHB_Club_Stages::liste( 'a_venir', array(), 1 );
+				$st = VHB_Club_Stages::liste( 'a_venir', array( 'stage' ), 1 );
 				if ( $st ) {
 					$val = $st[0]['titre'] . ' · ' . VHB_Club_Stages::resume( $st[0] );
 					$url = $st[0]['helloasso'];

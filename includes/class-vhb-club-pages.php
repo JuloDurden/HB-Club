@@ -752,6 +752,10 @@ class VHB_Club_Pages {
 				'article'      => ( $s['article'] && 'publish' === get_post_status( $s['article'] ) )
 					? array( 'titre' => html_entity_decode( get_the_title( $s['article'] ), ENT_QUOTES, 'UTF-8' ), 'url' => get_permalink( $s['article'] ) )
 					: null,
+				// 3.1.0 : nom du type, date à confirmer.
+				'type_nom'     => VHB_Club_Types::TYPES_STAGE[ $s['type'] ] ?? '',
+				'a_confirmer'  => $s['a_confirmer'],
+				'date_texte'   => $s['date_texte'],
 			);
 		}
 		return $out;

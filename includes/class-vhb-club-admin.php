@@ -84,7 +84,7 @@ class VHB_Club_Admin {
 			return true;
 		}
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore
-		return in_array( $page, array( self::MENU, self::REGLAGES, self::SAISONS, 'vhb-club-inscriptions', 'vhb-club-organigramme', 'vhb-club-vie', 'vhb-club-export', 'vhb-club-photos', 'vhb-etat' ), true );
+		return in_array( $page, array( self::MENU, self::REGLAGES, self::SAISONS, 'vhb-club-inscriptions', 'vhb-club-organigramme', 'vhb-club-vie', 'vhb-club-export', 'vhb-club-photos', 'vhb-etat', 'vhb-club-calendrier' ), true );
 	}
 
 	public static function assets() {
@@ -289,7 +289,7 @@ class VHB_Club_Admin {
 				$out[] = array( $l['nom'] . ' : adresse manquante.', get_edit_post_link( $l['id'], 'raw' ) );
 			}
 		}
-		foreach ( VHB_Club_Stages::liste( 'a_venir' ) as $s ) {
+		foreach ( VHB_Club_Stages::liste( 'a_venir', array( 'stage' ) ) as $s ) {
 			if ( '' === $s['helloasso'] ) {
 				$out[] = array( $s['titre'] . ' : pas de lien HelloAsso, aucun bouton de réservation.', get_edit_post_link( $s['id'], 'raw' ) );
 			}
@@ -368,7 +368,7 @@ class VHB_Club_Admin {
 							<tr><th><?php echo esc_html( $label ); ?></th><td><?php echo (int) $nb; ?></td></tr>
 						<?php endforeach; ?>
 					</table>
-					<p class="description">Gestionnaire club : toutes les données du club, sans les réglages ni les saisons. Éditeur de stages : les stages seulement. Rôle à donner dans Comptes &gt; Profil de la personne.</p>
+					<p class="description">Gestionnaire club : toutes les données du club, sans les réglages ni les saisons. Éditeur de stages : les événements seulement (stages, tournois, loto...). Rôle à donner dans Comptes &gt; Profil de la personne.</p>
 					<?php if ( current_user_can( 'list_users' ) ) : ?>
 						<p><a class="button" href="<?php echo esc_url( admin_url( 'users.php' ) ); ?>">Gérer les comptes</a></p>
 					<?php endif; ?>

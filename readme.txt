@@ -3,7 +3,7 @@ Contributors: julodurden
 Tags: handball, club, sport, ffhb, résultats
 Requires at least: 6.1
 Requires PHP: 7.4
-Stable tag: 3.0.1
+Stable tag: 3.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
@@ -126,6 +126,12 @@ Copyright (C) 2026 Julien Clavel.
 Ce programme est un logiciel libre : vous pouvez le redistribuer et le modifier selon les termes de la Licence publique générale GNU (GPL) publiée par la Free Software Foundation, version 2 ou (à votre choix) toute version ultérieure. Il est distribué sans aucune garantie. Texte complet : fichier LICENSE.
 
 == Journal des versions ==
+
+= 3.1.0 =
+* Événements (ex « Stages ») : tous les événements du club dans un seul menu. Types : Stage, Tournoi, Loto, Assemblée générale, Fête / soirée du club, Action solidaire, Autre événement. Colonne « Type » dans la liste.
+* Date à confirmer : case et texte libre (ex. « fin février ou début mars ») ; la date saisie sert à classer l'événement. Transmis aux données des pages (a_confirmer, date_texte, type_nom).
+* Calendrier des événements (administration) : grille du mois avec navigation, ajout d'un événement en cliquant sur un jour, liste de la saison mois par mois.
+* Lien HelloAsso demandé seulement pour les stages (avertissements, tableau de bord). La valeur « prochain stage » ne retient que les stages.
 
 = 3.0.1 =
 * Stages et événements : champs « Présentation » et « Article lié », transmis aux données des pages (agenda de la page Actualités).

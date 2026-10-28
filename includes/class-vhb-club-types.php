@@ -17,11 +17,26 @@ class VHB_Club_Types {
 	const CATEGORIE = 'vhbc_categorie';
 	const STAGE     = 'vhbc_stage';
 
+	// 3.1.0 : tous les événements du club (agenda de la page Actualités, calendrier de l'administration).
 	const TYPES_STAGE = array(
-		'stage'   => 'Stage',
-		'tournoi' => 'Tournoi',
-		'fete'    => 'Fête du club',
-		'autre'   => 'Événement',
+		'stage'     => 'Stage',
+		'tournoi'   => 'Tournoi',
+		'loto'      => 'Loto',
+		'ag'        => 'Assemblée générale',
+		'fete'      => 'Fête / soirée du club',
+		'solidaire' => 'Action solidaire',
+		'autre'     => 'Autre événement',
+	);
+
+	/** Couleur de chaque type dans le calendrier de l'administration. */
+	const COULEURS_STAGE = array(
+		'stage'     => '#00B0E8',
+		'tournoi'   => '#FF6A3D',
+		'loto'      => '#8E44AD',
+		'ag'        => '#3B3E45',
+		'fete'      => '#E0A800',
+		'solidaire' => '#E6007E',
+		'autre'     => '#6B7080',
 	);
 
 	/** Préfixe des métadonnées. */
@@ -71,7 +86,7 @@ class VHB_Club_Types {
 	 * - Gestionnaire club : toutes les données du club (catégories, horaires,
 	 *   tarifs, stages, organigramme, vie du club), médiathèque ; ni réglages,
 	 *   ni saisons, ni le reste du site.
-	 * - Éditeur de stages : les stages seulement, médiathèque.
+	 * - Éditeur de stages : les événements (stages, tournois, loto...) seulement, médiathèque.
 	 */
 	const ROLES = array(
 		'vhb_gestionnaire'   => 'Gestionnaire club',
@@ -171,7 +186,8 @@ class VHB_Club_Types {
 		register_post_type( self::CATEGORIE, self::base( 'Catégorie', 'Catégories', true ) );
 		// Un éditeur de stages n'a pas le menu VHB : ses stages ont leur propre entrée.
 		// 2.0.2 : image mise en avant = affiche du stage (page Stages de la refonte).
-		$stage = self::base( 'Stage ou événement', 'Stages', false, array( 'supports' => array( 'title', 'thumbnail' ) ), VHB_Club_Reglages::CAP_STAGES );
+		// 3.1.0 : menu « Événements » (stages, tournois, loto, AG...).
+		$stage = self::base( 'Événement', 'Événements', false, array( 'supports' => array( 'title', 'thumbnail' ) ), VHB_Club_Reglages::CAP_STAGES );
 		if ( is_user_logged_in() && ! current_user_can( VHB_Club_Reglages::CAP_DONNEES ) ) {
 			$stage['show_in_menu']  = true;
 			$stage['menu_icon']     = 'dashicons-calendar-alt';

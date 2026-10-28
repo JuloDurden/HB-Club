@@ -1,7 +1,8 @@
 <?php
 /**
- * Stages et événements (lot 3) : dates, horaires, public, lieu, tarifs,
- * conditions, lien HelloAsso. Un stage passé disparaît seul du site.
+ * Événements du club (lot 3, élargi en 3.1.0) : stages, tournois, loto, AG...
+ * Dates (éventuellement « à confirmer »), horaires, public, lieu, tarifs,
+ * conditions, lien HelloAsso. Un événement passé disparaît seul du site.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -50,6 +51,9 @@ class VHB_Club_Stages {
 			// 3.0.1 : texte de présentation et article du site lié (agenda de la page Actualités).
 			'presentation' => (string) $m( 'presentation' ),
 			'article'      => (int) $m( 'article', 0 ),
+			// 3.1.0 : date pas encore arrêtée ; la date saisie sert à classer, le texte remplace la date à l'affichage.
+			'a_confirmer'  => (bool) $m( 'a_confirmer', false ),
+			'date_texte'   => (string) $m( 'date_texte' ),
 		);
 		if ( '' === $s['fin'] ) {
 			$s['fin'] = $s['debut'];
@@ -122,18 +126,26 @@ class VHB_Club_Stages {
 	/* ------------------------------------------------------------------ */
 
 	public static function placeholder( $text, $post ) {
-		return VHB_Club_Types::STAGE === $post->post_type ? 'Titre (ex. Stage Vacances Toussaint)' : $text;
+		return VHB_Club_Types::STAGE === $post->post_type ? 'Titre (ex. Stage Vacances Toussaint, Tournoi de Noël, Loto du club)' : $text;
 	}
 
 	public static function boxes() {
 		remove_meta_box( 'slugdiv', VHB_Club_Types::STAGE, 'normal' );
-		add_meta_box( 'vhbc_stage', 'Stage', array( __CLASS__, 'box' ), VHB_Club_Types::STAGE, 'normal', 'high' );
+		add_meta_box( 'vhbc_stage', 'Événement', array( __CLASS__, 'box' ), VHB_Club_Types::STAGE, 'normal', 'high' );
 		add_meta_box( 'vhbc_stage_tarifs', 'Tarifs et conditions', array( __CLASS__, 'box_tarifs' ), VHB_Club_Types::STAGE, 'normal', 'high' );
 	}
 
 	public static function box( $post ) {
 		wp_nonce_field( 'vhbc_save', 'vhbc_nonce' );
 		$s = self::stage( $post->ID );
+		// Création depuis le calendrier : date du jour cliqué.
+		if ( '' === $s['debut'] && isset( $_GET['vhbc_debut'] ) ) { // phpcs:ignore
+			$d = sanitize_text_field( wp_unslash( $_GET['vhbc_debut'] ) ); // phpcs:ignore
+			if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $d ) ) {
+				$s['debut'] = $d;
+				$s['fin']   = $d;
+			}
+		}
 		?>
 		<table class="form-table vhbc-form" role="presentation">
 			<tr><th scope="row"><label for="vhbc-stype">Type</label></th><td>
@@ -146,14 +158,17 @@ class VHB_Club_Stages {
 			<tr><th scope="row">Dates</th><td>
 				<label>du <input type="date" name="vhbc_stage[debut]" value="<?php echo esc_attr( $s['debut'] ); ?>" required></label>
 				<label>au <input type="date" name="vhbc_stage[fin]" value="<?php echo esc_attr( $s['fin'] ); ?>"></label>
-				<p class="description">Le stage disparaît seul du site le lendemain de la date de fin.</p>
+				<p class="description">L'événement disparaît seul du site le lendemain de la date de fin.</p>
+				<p><label><input type="checkbox" name="vhbc_stage[a_confirmer]" value="1" <?php checked( $s['a_confirmer'] ); ?>> Date à confirmer</label>
+				<input type="text" name="vhbc_stage[date_texte]" value="<?php echo esc_attr( $s['date_texte'] ); ?>" class="regular-text" placeholder="ex. fin février ou début mars" aria-label="Date annoncée"></p>
+				<p class="description">Date pas encore arrêtée : saisissez ci-dessus une date approchée (elle sert à classer l'événement), l'agenda affiche « À venir » et le texte à côté de la case.</p>
 			</td></tr>
 			<tr><th scope="row"><label for="vhbc-shor">Horaires</label></th><td>
 				<input type="text" id="vhbc-shor" name="vhbc_stage[horaires]" value="<?php echo esc_attr( $s['horaires'] ); ?>" class="regular-text" placeholder="ex. 8h45-16h30">
 			</td></tr>
 			<tr><th scope="row"><label for="vhbc-spub">Public</label></th><td>
 				<input type="text" id="vhbc-spub" name="vhbc_stage[public]" value="<?php echo esc_attr( $s['public'] ); ?>" class="regular-text" placeholder="ex. -9 à -15">
-				<p class="description">Version courte, pour l'accueil.</p>
+				<p class="description">Version courte, pour l'accueil (ex. « licenciés et parents »).</p>
 			</td></tr>
 			<tr><th scope="row"><label for="vhbc-sgrp">Groupes</label></th><td>
 				<input type="text" id="vhbc-sgrp" name="vhbc_stage[groupes]" value="<?php echo esc_attr( $s['groupes'] ); ?>" class="large-text" placeholder="ex. 2 groupes : -9/-11 et -13/-15">
@@ -251,7 +266,7 @@ class VHB_Club_Stages {
 			list( $debut, $fin ) = array( $fin, $debut );
 		}
 		if ( ! $debut ) {
-			VHB_Club_Admin::notice( 'warning', 'Aucune date de début : le stage ne s\'affichera pas sur le site.' );
+			VHB_Club_Admin::notice( 'warning', 'Aucune date de début : l\'événement ne s\'affichera pas sur le site (pour une date pas encore arrêtée, saisissez une date approchée et cochez « Date à confirmer »).' );
 		}
 		$tarifs = array();
 		foreach ( (array) ( $in['tarifs'] ?? array() ) as $k => $r ) {
@@ -265,7 +280,7 @@ class VHB_Club_Stages {
 			);
 		}
 		$ha = esc_url_raw( trim( (string) ( $in['helloasso'] ?? '' ) ) );
-		if ( 'publish' === $post->post_status && '' === $ha ) {
+		if ( 'publish' === $post->post_status && '' === $ha && 'stage' === $type ) {
 			VHB_Club_Admin::notice( 'warning', 'Pas de lien HelloAsso : le stage s\'affiche sans bouton de réservation.' );
 		}
 		$vals = array(
@@ -285,6 +300,8 @@ class VHB_Club_Stages {
 			'complet'    => empty( $in['complet'] ) ? '' : '1',
 			'presentation' => sanitize_textarea_field( (string) ( $in['presentation'] ?? '' ) ),
 			'article'      => absint( $in['article'] ?? 0 ),
+			'a_confirmer'  => empty( $in['a_confirmer'] ) ? '' : '1',
+			'date_texte'   => sanitize_text_field( (string) ( $in['date_texte'] ?? '' ) ),
 		);
 		foreach ( $vals as $k => $v ) {
 			VHB_Club_Types::set_meta( $post_id, $k, $v );
@@ -298,7 +315,8 @@ class VHB_Club_Stages {
 	public static function columns( $cols ) {
 		return array(
 			'cb'          => $cols['cb'] ?? '',
-			'title'       => 'Stage ou événement',
+			'title'       => 'Événement',
+			'vhbc_type'   => 'Type',
 			'vhbc_dates'  => 'Dates',
 			'vhbc_etat'   => 'Sur le site',
 			'vhbc_ha'     => 'HelloAsso',
@@ -308,8 +326,15 @@ class VHB_Club_Stages {
 	public static function column( $col, $id ) {
 		$s = self::stage( $id );
 		switch ( $col ) {
+			case 'vhbc_type':
+				$c = VHB_Club_Types::COULEURS_STAGE[ $s['type'] ] ?? '#6B7080';
+				echo '<span class="vhbc-type"><span class="vhbc-type-pt" style="background:' . esc_attr( $c ) . '"></span>' . esc_html( VHB_Club_Types::TYPES_STAGE[ $s['type'] ] ?? $s['type'] ) . '</span>';
+				break;
 			case 'vhbc_dates':
 				echo esc_html( VHB_Club_Donnees::periode( $s['debut'], $s['fin'], true ) );
+				if ( $s['a_confirmer'] ) {
+					echo '<br><span class="vhbc-pill">à confirmer' . ( '' !== $s['date_texte'] ? ' : ' . esc_html( $s['date_texte'] ) : '' ) . '</span>';
+				}
 				break;
 			case 'vhbc_etat':
 				$e = array(
@@ -322,7 +347,11 @@ class VHB_Club_Stages {
 				echo $s['complet'] ? ' <span class="vhbc-pill">complet</span>' : '';
 				break;
 			case 'vhbc_ha':
-				echo $s['helloasso'] ? '<a href="' . esc_url( $s['helloasso'] ) . '" target="_blank" rel="noopener">billetterie</a>' : '<span class="vhbc-err">manquant</span>';
+				if ( $s['helloasso'] ) {
+					echo '<a href="' . esc_url( $s['helloasso'] ) . '" target="_blank" rel="noopener">billetterie</a>';
+				} else {
+					echo 'stage' === $s['type'] ? '<span class="vhbc-err">manquant</span>' : '<span aria-label="aucun">-</span>';
+				}
 				break;
 		}
 	}

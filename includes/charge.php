@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'VHB_CLUB_VERSION', '3.0.1' );
+define( 'VHB_CLUB_VERSION', '3.1.0' );
 define( 'VHB_CLUB_DIR', plugin_dir_path( VHB_CLUB_FILE ) );
 define( 'VHB_CLUB_URL', plugin_dir_url( VHB_CLUB_FILE ) );
 if ( ! defined( 'VHB_MARQUE' ) ) {
@@ -57,6 +57,7 @@ if ( is_admin() ) {
 	require_once VHB_CLUB_DIR . 'includes/class-vhb-club-vie-admin.php';
 	require_once VHB_CLUB_DIR . 'includes/class-vhb-club-export.php';
 	require_once VHB_CLUB_DIR . 'includes/class-vhb-club-etat.php';
+	require_once VHB_CLUB_DIR . 'includes/class-vhb-club-calendrier.php';
 }
 
 register_activation_hook(
@@ -114,6 +115,7 @@ add_action(
 			VHB_Club_Vie_Admin::init();
 			VHB_Club_Export::init();
 			VHB_Club_Etat::init();
+			VHB_Club_Calendrier::init();
 		}
 	}
 );
