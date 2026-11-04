@@ -37,6 +37,10 @@ class VHB_Logos {
 
 	/** URL locale du blason, ou '' s'il n'est pas (encore) en cache. */
 	public static function url( $stem ) {
+		// « media-123 » : blason choisi dans la médiathèque (adversaires des rencontres loisirs).
+		if ( is_string( $stem ) && preg_match( '/^media-(\d+)$/', $stem, $m ) ) {
+			return (string) wp_get_attachment_image_url( (int) $m[1], 'thumbnail' );
+		}
 		if ( ! self::valid( $stem ) || ! file_exists( self::path( $stem ) ) ) {
 			return '';
 		}
@@ -73,7 +77,7 @@ class VHB_Logos {
 		$added = 0;
 		$tries = 0;
 		foreach ( $stems as $stem ) {
-			if ( ! self::valid( $stem ) || file_exists( self::path( $stem ) ) ) {
+			if ( ! self::valid( $stem ) || 0 === strpos( $stem, 'media-' ) || file_exists( self::path( $stem ) ) ) {
 				continue;
 			}
 			if ( isset( $miss[ $stem ] ) && $miss[ $stem ] > time() - self::RETRY_DAYS * DAY_IN_SECONDS ) {

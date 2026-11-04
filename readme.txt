@@ -3,7 +3,7 @@ Contributors: julodurden
 Tags: handball, club, sport, ffhb, résultats
 Requires at least: 6.1
 Requires PHP: 7.4
-Stable tag: 3.3.0
+Stable tag: 3.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
@@ -126,6 +126,10 @@ Copyright (C) 2026 Julien Clavel.
 Ce programme est un logiciel libre : vous pouvez le redistribuer et le modifier selon les termes de la Licence publique générale GNU (GPL) publiée par la Free Software Foundation, version 2 ou (à votre choix) toute version ultérieure. Il est distribué sans aucune garantie. Texte complet : fichier LICENSE.
 
 == Journal des versions ==
+
+= 3.3.1 =
+* Rencontres loisirs : blasons. Le nôtre est repris des rencontres FFHB ; celui d'un adversaire vient du club FFHB qui lui ressemble (« LA CADOULE 2 » : La Cadoule HB), ou du choix fait dans « Blasons des adversaires » (club déjà rencontré en FFHB, image de la médiathèque, ou aucun : initiales).
+* Rencontre officielle sans date : elle prend la date de la prochaine rencontre provisoire contre le même adversaire, au même endroit.
 
 = 3.3.0 =
 * Rencontres loisirs (VHB > Rencontres loisirs) : rencontres saisies dans Gest'Hand mais absentes de ffhandball.fr. Calendrier importé d'un export GH Extraction (CSV) ; un fichier provisoire au même format (codes PROV…) sert en attendant le calendrier officiel, qui le remplace jusqu'à sa dernière date.

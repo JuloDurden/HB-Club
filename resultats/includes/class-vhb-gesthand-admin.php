@@ -13,7 +13,8 @@ class VHB_Gesthand_Admin {
 
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ), 20 );
-		foreach ( array( 'reglages', 'import', 'fdm', 'relire', 'provisoires' ) as $a ) {
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'assets' ) );
+		foreach ( array( 'reglages', 'import', 'fdm', 'relire', 'provisoires', 'blasons' ) as $a ) {
 			add_action( 'admin_post_vhb_gh_' . $a, array( __CLASS__, 'post_' . $a ) );
 		}
 	}
@@ -21,6 +22,34 @@ class VHB_Gesthand_Admin {
 	public static function menu() {
 		$parent = VHB_Admin::menu_commun();
 		add_submenu_page( $parent ? $parent : VHB_Admin::SLUG, 'Rencontres loisirs', 'Rencontres loisirs', self::CAP, self::SLUG, array( __CLASS__, 'page' ) );
+	}
+
+	public static function assets( $hook ) {
+		if ( false !== strpos( (string) $hook, self::SLUG ) ) {
+			wp_enqueue_media();
+		}
+	}
+
+	public static function post_blasons() {
+		self::guard( 'blasons' );
+		$d     = VHB_Gesthand::get();
+		$choix = array();
+		foreach ( (array) ( $_POST['blason'] ?? array() ) as $nom => $v ) { // phpcs:ignore
+			$nom = VHB_Settings::upper( sanitize_text_field( wp_unslash( $nom ) ) );
+			$v   = sanitize_text_field( wp_unslash( $v ) );
+			if ( 'media' === $v ) {
+				$id = absint( $_POST['media'][ $nom ] ?? 0 ); // phpcs:ignore
+				if ( $id && wp_attachment_is_image( $id ) ) {
+					$choix[ $nom ] = 'media:' . $id;
+				}
+			} elseif ( 'aucun' === $v || 0 === strpos( $v, 'club:' ) ) {
+				$choix[ $nom ] = $v;
+			}
+		}
+		$d['blasons'] = $choix;
+		update_option( VHB_Gesthand::OPTION, $d, false );
+		VHB_Gesthand::publier();
+		self::back( 'Blasons enregistrés.' );
 	}
 
 	private static function back( $msg, $type = 'ok' ) {
@@ -271,6 +300,74 @@ class VHB_Gesthand_Admin {
 				<?php endif; ?>
 			</div>
 
+			<h2>Blasons des adversaires</h2>
+			<?php
+			$connus = VHB_Gesthand::clubs_connus();
+			$advs   = VHB_Gesthand::adversaires();
+			?>
+			<p class="description" style="max-width:820px">Les blasons viennent des clubs déjà rencontrés par nos équipes FFHB. Le site devine le club à partir du nom ; corrigez ici s'il se trompe (« POUSSAN » : La Vène HB). Pour un club jamais rencontré en FFHB, choisissez une image de la médiathèque. Sans blason : les initiales du club.</p>
+			<?php if ( $advs ) : ?>
+			<form method="post" action="<?php echo $post; // phpcs:ignore ?>">
+				<input type="hidden" name="action" value="vhb_gh_blasons">
+				<?php wp_nonce_field( 'vhb_gh_blasons' ); ?>
+				<table class="widefat striped vhb-gh-table vhb-gh-blasons"><thead><tr><th>Adversaire</th><th>Blason</th><th>Club</th></tr></thead><tbody>
+				<?php
+				foreach ( $advs as $cle => $nom ) {
+					$c     = (string) ( $d['blasons'][ $cle ] ?? '' );
+					$stem  = VHB_Gesthand::blason_de( $nom, $connus, $d['blasons'] );
+					$url   = VHB_Logos::url( $stem );
+					$guess = VHB_Gesthand::devine( $nom, $connus );
+					$mid   = preg_match( '/^media:(\d+)$/', $c, $mm ) ? (int) $mm[1] : 0;
+					$f     = esc_attr( $cle );
+					echo '<tr><td><strong>' . esc_html( $nom ) . '</strong></td>'
+						. '<td>' . ( $url ? '<img src="' . esc_url( $url ) . '" alt="" width="40" height="40" style="object-fit:contain" class="vhb-gh-img">' : '<span class="vhb-gh-ini">' . esc_html( VHB_Logos::initials( $nom ) ) . '</span>' ) . '</td><td>'
+						. '<select name="blason[' . $f . ']" class="vhb-gh-sel">'
+						. '<option value="">Automatique' . ( '' !== $guess ? ' : ' . esc_html( $guess ) : ' (aucun club trouvé)' ) . '</option>';
+					foreach ( array_keys( $connus ) as $club ) {
+						echo '<option value="' . esc_attr( 'club:' . $club ) . '" ' . selected( $c, 'club:' . $club, false ) . '>' . esc_html( $club ) . '</option>';
+					}
+					echo '<option value="media" ' . selected( (bool) $mid, true, false ) . '>Image de la médiathèque…</option>'
+						. '<option value="aucun" ' . selected( $c, 'aucun', false ) . '>Aucun (initiales)</option></select> '
+						. '<input type="hidden" name="media[' . $f . ']" value="' . (int) $mid . '" class="vhb-gh-mid">'
+						. '<button type="button" class="button vhb-gh-pick"' . ( $mid ? '' : ' style="display:none"' ) . '>' . ( $mid ? 'Changer l\'image' : 'Choisir l\'image' ) . '</button>'
+						. '</td></tr>';
+				}
+				?>
+				</tbody></table>
+				<?php submit_button( 'Enregistrer les blasons', 'secondary' ); ?>
+			</form>
+			<script>
+			( function () {
+				document.querySelectorAll( '.vhb-gh-blasons tr' ).forEach( function ( tr ) {
+					var sel = tr.querySelector( '.vhb-gh-sel' ), btn = tr.querySelector( '.vhb-gh-pick' ), mid = tr.querySelector( '.vhb-gh-mid' );
+					if ( ! sel ) { return; }
+					var choisir = function () {
+						if ( ! window.wp || ! wp.media ) { return; }
+						var f = wp.media( { title: 'Blason de l\'adversaire', library: { type: 'image' }, multiple: false } );
+						f.on( 'select', function () {
+							var a = f.state().get( 'selection' ).first().toJSON();
+							mid.value = a.id;
+							var img = tr.querySelector( 'td:nth-child(2)' );
+							var u = ( a.sizes ? ( a.sizes.thumbnail || a.sizes.full ) : null );
+							img.innerHTML = '<img src="' + ( u ? u.url : a.url ) + '" alt="" width="40" height="40" style="object-fit:contain">';
+							btn.textContent = 'Changer l\'image';
+						} );
+						f.open();
+					};
+					sel.addEventListener( 'change', function () {
+						btn.style.display = sel.value === 'media' ? '' : 'none';
+						if ( sel.value === 'media' ) {
+							if ( mid.value === '0' ) { choisir(); }
+						}
+					} );
+					btn.addEventListener( 'click', choisir );
+				} );
+			} )();
+			</script>
+			<?php else : ?>
+				<p><em>Aucun adversaire pour l'instant.</em></p>
+			<?php endif; ?>
+
 			<h2>Déposer une feuille de match</h2>
 			<form method="post" action="<?php echo $post; // phpcs:ignore ?>" enctype="multipart/form-data" class="vhb-gh-inline">
 				<input type="hidden" name="action" value="vhb_gh_fdm">
@@ -326,6 +423,10 @@ class VHB_Gesthand_Admin {
 			.vhb-gh .vhb-pill { display: inline-block; font-size: 11px; line-height: 1.6; padding: 0 8px; border-radius: 999px; background: #dff0d8; color: #1e4620; }
 			.vhb-gh .vhb-pill--off { background: #f0f0f1; color: #50575e; }
 			.vhb-gh .vhb-err { color: #b32d2e; }
+			.vhb-gh .vhb-gh-blasons { max-width: 900px; }
+			.vhb-gh .vhb-gh-blasons td { vertical-align: middle; }
+			.vhb-gh .vhb-gh-ini { display: inline-flex; width: 40px; height: 40px; border-radius: 50%; background: #dcdcde; color: #50575e; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; }
+			.vhb-gh .vhb-gh-sel { max-width: 360px; }
 		</style>
 		<?php
 	}

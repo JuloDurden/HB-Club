@@ -49,6 +49,7 @@ class VHB_Gesthand {
 			'libelle'    => '',
 			'filtre'     => 'loisir',
 			'filles'     => true,
+			'blasons'    => array(), // NOM ADVERSAIRE => « stem:… », « media:ID » ou « aucun »
 			'rencontres' => array(),
 			'resultats'  => array(),
 			'stats'      => array(),
@@ -246,14 +247,26 @@ class VHB_Gesthand {
 			$d['rencontres'][ $code ] = $x;
 		}
 
-		// 2. Rencontre officielle sans date : elle prend la date de la rencontre provisoire passée contre le même adversaire.
+		// 2. Rencontre officielle sans date (pas encore jouée, puisqu'elle est dans l'export) : elle prend la date
+		// de la prochaine rencontre provisoire contre le même adversaire, au même endroit.
+		$prov = array_filter( $d['rencontres'], static function ( $y ) {
+			return ! empty( $y['provisoire'] ) && $y['date'];
+		} );
+		uasort( $prov, static function ( $a, $b ) {
+			return strcmp( $a['date'], $b['date'] );
+		} );
 		foreach ( $d['rencontres'] as $code => $x ) {
 			if ( ! empty( $x['provisoire'] ) || $x['date'] ) {
 				continue;
 			}
-			foreach ( $d['rencontres'] as $k => $y ) {
-				if ( ! empty( $y['provisoire'] ) && $y['date'] && $jour( $y ) < $auj && self::meme_adversaire( $x, $y ) ) {
+			foreach ( $prov as $k => $y ) {
+				if ( isset( $d['rencontres'][ $k ] ) && $jour( $y ) >= $auj && (bool) $y['a_domicile'] === (bool) $x['a_domicile'] && self::meme_adversaire( $x, $y ) ) {
 					$d['rencontres'][ $code ]['date'] = $jour( $y ) . ' 00:00:00';
+					if ( '' === (string) $x['salle'] ) {
+						foreach ( array( 'salle', 'adresse', 'cp', 'ville' ) as $k2 ) {
+							$d['rencontres'][ $code ][ $k2 ] = $y[ $k2 ];
+						}
+					}
 					unset( $d['rencontres'][ $k ] );
 					++$bilan['provisoires_retires'];
 					break;
@@ -315,6 +328,109 @@ class VHB_Gesthand {
 		);
 	}
 
+	/* ------------------------------------------------------------------ */
+	/* Blasons                                                             */
+	/* ------------------------------------------------------------------ */
+
+	/**
+	 * Clubs déjà rencontrés par les équipes FFHB du club, avec leur blason :
+	 * NOM FFHB => identifiant du blason (rencontres et classements).
+	 *
+	 * @return array<string,string>
+	 */
+	public static function clubs_connus() {
+		$out = array();
+		foreach ( (array) VHB_Store::get()['equipes'] as $e ) {
+			foreach ( (array) ( $e['competitions'] ?? array() ) as $cle => $c ) {
+				if ( self::CLE === (string) $cle ) {
+					continue;
+				}
+				foreach ( (array) ( $c['rencontres'] ?? array() ) as $r ) {
+					foreach ( array( 1 => 'domicile', 2 => 'exterieur' ) as $i => $k ) {
+						$moi = 1 === $i ? ! empty( $r['a_domicile'] ) : empty( $r['a_domicile'] );
+						if ( ! $moi && ! empty( $r[ 'logo' . $i ] ) ) {
+							$out[ (string) $r[ $k ] ] = (string) $r[ 'logo' . $i ];
+						}
+					}
+				}
+				foreach ( (array) ( $c['classement'] ?? array() ) as $l ) {
+					if ( empty( $l['vhb'] ) && ! empty( $l['logo'] ) ) {
+						$out[ (string) $l['equipe'] ] = (string) $l['logo'];
+					}
+				}
+			}
+		}
+		ksort( $out );
+		return $out;
+	}
+
+	/** Blason du club dans les rencontres FFHB (le plus fréquent de notre côté). */
+	public static function notre_blason() {
+		$n = array();
+		foreach ( (array) VHB_Store::get()['equipes'] as $e ) {
+			foreach ( (array) ( $e['competitions'] ?? array() ) as $cle => $c ) {
+				if ( self::CLE === (string) $cle ) {
+					continue;
+				}
+				foreach ( (array) ( $c['rencontres'] ?? array() ) as $r ) {
+					$s = (string) ( ! empty( $r['a_domicile'] ) ? ( $r['logo1'] ?? '' ) : ( $r['logo2'] ?? '' ) );
+					if ( '' !== $s ) {
+						$n[ $s ] = ( $n[ $s ] ?? 0 ) + 1;
+					}
+				}
+			}
+		}
+		arsort( $n );
+		return $n ? (string) key( $n ) : '';
+	}
+
+	/** Club FFHB qui ressemble le plus à un adversaire loisirs (mot significatif en commun), ou ''. */
+	public static function devine( $adv, array $connus ) {
+		$best = '';
+		$sc   = 0;
+		foreach ( array_keys( $connus ) as $nom ) {
+			$m = count( array_intersect_key( self::mots( $adv ), self::mots( $nom ) ) );
+			if ( $m > $sc || ( $m === $sc && $m && strlen( $nom ) < strlen( $best ) ) ) {
+				$sc   = $m;
+				$best = $nom;
+			}
+		}
+		return $sc ? $best : '';
+	}
+
+	/**
+	 * Blason d'un adversaire : choix enregistré dans l'administration, sinon club FFHB ressemblant.
+	 *
+	 * @return string identifiant pour VHB_Logos::url() (« media-ID » pour la médiathèque), '' si aucun
+	 */
+	public static function blason_de( $adv, array $connus, array $choix ) {
+		$c = (string) ( $choix[ self::upper( $adv ) ] ?? '' );
+		if ( 'aucun' === $c ) {
+			return '';
+		}
+		if ( preg_match( '/^media:(\d+)$/', $c, $m ) ) {
+			return 'media-' . $m[1];
+		}
+		if ( 0 === strpos( $c, 'club:' ) ) {
+			return (string) ( $connus[ substr( $c, 5 ) ] ?? '' );
+		}
+		$g = self::devine( $adv, $connus );
+		return '' !== $g ? $connus[ $g ] : '';
+	}
+
+	/** Adversaires de la saison, dans l'ordre alphabétique. */
+	public static function adversaires() {
+		$out = array();
+		foreach ( self::get()['rencontres'] as $r ) {
+			$a = $r['a_domicile'] ? $r['exterieur'] : $r['domicile'];
+			if ( '' !== $a ) {
+				$out[ self::upper( $a ) ] = $a;
+			}
+		}
+		ksort( $out );
+		return $out;
+	}
+
 	/** Notre nom le plus fréquent dans Gest'Hand, sans numéro d'équipe (« VILLENEUVE LOISIRS 1 » → « VILLENEUVE LOISIRS »). */
 	private static function notre_nom( array $rencontres, $defaut ) {
 		$n = array();
@@ -343,17 +459,21 @@ class VHB_Gesthand {
 
 	/** Même adversaire : un mot significatif en commun (« CLERMONT LOISIRS » et « CLERMONT L'HERAULT »). */
 	private static function meme_adversaire( array $a, array $b ) {
-		$mots = static function ( $r ) {
-			$nom = self::upper( $r['a_domicile'] ? $r['exterieur'] : $r['domicile'] );
-			$out = array();
-			foreach ( preg_split( '/[^\p{L}]+/u', $nom ) as $w ) {
-				if ( mb_strlen( $w ) >= 4 && ! in_array( $w, array( 'HANDBALL', 'LOISIRS', 'LOISIR', 'CLUB', 'SPORT', 'SPORTS' ), true ) ) {
-					$out[ mb_substr( $w, 0, 6 ) ] = true;
-				}
+		return (bool) array_intersect_key(
+			self::mots( $a['a_domicile'] ? $a['exterieur'] : $a['domicile'] ),
+			self::mots( $b['a_domicile'] ? $b['exterieur'] : $b['domicile'] )
+		);
+	}
+
+	/** Mots significatifs d'un nom de club (6 premières lettres) : « RC MONTAGNACOIS HB 2 » → MONTAG. */
+	private static function mots( $nom ) {
+		$out = array();
+		foreach ( preg_split( '/[^\p{L}]+/u', self::upper( $nom ) ) as $w ) {
+			if ( mb_strlen( $w ) >= 4 && ! in_array( $w, array( 'HANDBALL', 'LOISIRS', 'LOISIR', 'CLUB', 'SPORT', 'SPORTS', 'HAND' ), true ) ) {
+				$out[ mb_substr( $w, 0, 6 ) ] = true;
 			}
-			return $out;
-		};
-		return (bool) array_intersect_key( $mots( $a ), $mots( $b ) );
+		}
+		return $out;
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -523,7 +643,11 @@ class VHB_Gesthand {
 		$salles = VHB_Settings::salles();
 		$lib    = '' !== trim( $d['libelle'] ) ? trim( $d['libelle'] ) : self::notre_nom( $d['rencontres'], $cfg['nom'] );
 		$renc   = array();
+		$connus = self::clubs_connus();
+		$notre  = self::notre_blason();
 		foreach ( $d['rencontres'] as $code => $r ) {
+			$adv   = $r['a_domicile'] ? $r['exterieur'] : $r['domicile'];
+			$bl    = self::blason_de( $adv, $connus, $d['blasons'] );
 			$res   = $d['resultats'][ $code ] ?? array();
 			$s1    = isset( $res['score1'] ) && '' !== (string) $res['score1'] ? (string) $res['score1'] : null;
 			$s2    = isset( $res['score2'] ) && '' !== (string) $res['score2'] ? (string) $res['score2'] : null;
@@ -547,8 +671,8 @@ class VHB_Gesthand {
 				'forfait'       => $forf,
 				'forfait_de'    => '',
 				'a_domicile'    => (bool) $r['a_domicile'],
-				'logo1'         => '',
-				'logo2'         => '',
+				'logo1'         => $r['a_domicile'] ? $notre : $bl,
+				'logo2'         => $r['a_domicile'] ? $bl : $notre,
 				'lieu'          => $lieu,
 				'adresse'       => $adr,
 				'lat'           => $salle ? $salle['lat'] : null,
