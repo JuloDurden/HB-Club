@@ -1,0 +1,15 @@
+/* Pages de la refonte (VHB 3.4.0) : photos des emplacements, squelettes de chargement */
+.vhb-ph-ok { background: #1A1D24 !important; color: transparent !important; overflow: hidden; }
+.vhb-ph-c { position: absolute; inset: 0; background-size: cover; background-repeat: no-repeat; opacity: 0; transition: opacity 1.2s ease; pointer-events: none; }
+.vhb-ph-c.on { opacity: 1; }
+.vhb-ph-muet { color: transparent !important; }
+
+/* Squelette : la zone garde sa mise en page, ses textes deviennent des barres grises qui pulsent */
+.vhb-sk-z:not(.vhb-pret) * { color: transparent !important; border-color: transparent !important; text-shadow: none !important; }
+.vhb-sk-z:not(.vhb-pret) img, .vhb-sk-z:not(.vhb-pret) svg, .vhb-sk-z:not(.vhb-pret) .leaflet-container { opacity: 0 !important; }
+.vhb-sk-z:not(.vhb-pret) *:not(:has(*)):not(:empty) { background: rgba(140, 144, 152, .22) !important; border-radius: 6px; animation: vhb-sk 1.1s ease-in-out infinite alternate; }
+@keyframes vhb-sk { from { opacity: .45; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+	.vhb-sk-z:not(.vhb-pret) * { animation: none !important; }
+	.vhb-ph-c { transition: none; }
+}

@@ -143,7 +143,8 @@ class VHB_Club_Photos {
 		$res    = current_user_can( 'manage_options' ) ? admin_url( 'admin.php?page=vhb-ffhb' ) : '';
 		?>
 		<div class="wrap vhbc-wrap vhbc-photos">
-			<h1>Photos d'équipe</h1>
+			<h1>Photos</h1>
+			<?php VHB_Club_Photos_Site::onglets( self::PAGE ); ?>
 			<?php if ( isset( $_GET['ok'] ) ) : // phpcs:ignore ?>
 				<div class="notice notice-success is-dismissible"><p>Photos enregistrées. Le cache des pages a été vidé.</p></div>
 			<?php endif; ?>
