@@ -1,0 +1,684 @@
+<?php
+/**
+ * Rencontres Gest'Hand non publiées sur ffhandball.fr (rencontres loisirs).
+ *
+ * Sources :
+ *  - le calendrier : export CSV du module GH Extraction de Gest'Hand
+ *    (ou un fichier au même format fait d'après le calendrier provisoire,
+ *    dont les codes rencontre commencent par « PROV ») ;
+ *  - les résultats : la feuille de match FDME, publique sur le serveur de la
+ *    FFHB dès qu'on connaît son code rencontre, téléchargée par le cron après
+ *    le match, ou déposée à la main dans l'administration.
+ *
+ * Les rencontres forment une compétition « gesthand » ajoutée à l'équipe
+ * choisie (filtre vhb_ffhb_competitions) : elles s'affichent partout comme
+ * celles de la FFHB (accueil, Nos équipes, blocs Résultats, agenda).
+ *
+ * Données personnelles : statistiques des joueurs du club seulement, prénom et
+ * initiale du nom, visibles uniquement dans l'administration. La feuille de
+ * match n'est pas proposée au public.
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+class VHB_Gesthand {
+
+	const OPTION = 'vhb_gesthand';
+	const CLE    = 'gesthand';
+	const TYPE   = 'gesthand';
+
+	/** Délai après l'heure du match avant de chercher la feuille (1 h 30). */
+	const DELAI_FDM = 5400;
+	/** Feuille relue une fois si elle a été lue moins de 48 h après le match (feuille corrigée). */
+	const DELAI_FINAL = 2 * DAY_IN_SECONDS;
+	/** Feuilles téléchargées au plus par passage du cron. */
+	const MAX_TOUR = 6;
+
+	public static function init() {
+		add_filter( 'vhb_ffhb_competitions', array( __CLASS__, 'competitions' ), 10, 2 );
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Données                                                             */
+	/* ------------------------------------------------------------------ */
+
+	public static function defaults() {
+		return array(
+			'equipe'     => '',
+			'nom'        => 'Rencontres loisirs',
+			'libelle'    => '',
+			'filtre'     => 'loisir',
+			'filles'     => true,
+			'rencontres' => array(),
+			'resultats'  => array(),
+			'stats'      => array(),
+			'imports'    => array(),
+		);
+	}
+
+	public static function get() {
+		$d = get_option( self::OPTION );
+		return array_merge( self::defaults(), is_array( $d ) ? $d : array() );
+	}
+
+	private static function put( array $d ) {
+		if ( false === get_option( self::OPTION ) ) {
+			add_option( self::OPTION, $d, '', false );
+		} else {
+			update_option( self::OPTION, $d, false );
+		}
+	}
+
+	/** Compétition « Gest'Hand » ajoutée à l'équipe choisie, dès qu'elle a au moins une rencontre. */
+	public static function competitions( $comps, $equipe ) {
+		$d = self::get();
+		if ( '' === $d['equipe'] || ( $equipe['slug'] ?? '' ) !== $d['equipe'] || ! $d['rencontres'] ) {
+			return $comps;
+		}
+		$comps[] = array(
+			'url'  => '',
+			'nom'  => $d['nom'],
+			'cle'  => self::CLE,
+			'type' => self::TYPE,
+		);
+		return $comps;
+	}
+
+	private static function club_id() {
+		return (string) VHB_Settings::get()['club_id'];
+	}
+
+	/** Numéro de club Gest'Hand (6134078) qui se termine par l'identifiant FFHB du club (4078). */
+	private static function est_nous( $num ) {
+		$id = self::club_id();
+		return '' !== $id && '' !== (string) $num && substr( (string) $num, -strlen( $id ) ) === $id;
+	}
+
+	private static function upper( $s ) {
+		return VHB_Settings::upper( trim( (string) $s ) );
+	}
+
+	/** « LA VENE HANDBALL POUSSAN 0 » → « LA VENE HANDBALL POUSSAN » (suffixe d'équipe unique de Gest'Hand). */
+	private static function nom_equipe( $s ) {
+		return trim( preg_replace( '/\s+0$/', '', trim( (string) $s ) ) );
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Import du calendrier (GH Extraction)                                */
+	/* ------------------------------------------------------------------ */
+
+	/**
+	 * Lit un export CSV de GH Extraction (séparateur « ; », UTF-8 ou Windows-1252).
+	 *
+	 * @return array<int,array<string,string>> lignes, clés = en-têtes en minuscules
+	 * @throws RuntimeException fichier vide ou méconnaissable
+	 */
+	public static function lire_csv( $raw ) {
+		$raw = (string) $raw;
+		if ( "\xEF\xBB\xBF" === substr( $raw, 0, 3 ) ) {
+			$raw = substr( $raw, 3 );
+		}
+		if ( ! mb_check_encoding( $raw, 'UTF-8' ) ) {
+			$raw = mb_convert_encoding( $raw, 'UTF-8', 'Windows-1252' );
+		}
+		$h = fopen( 'php://temp', 'r+' ); // phpcs:ignore
+		fwrite( $h, $raw ); // phpcs:ignore
+		rewind( $h );
+		$entete = null;
+		$out    = array();
+		while ( false !== ( $l = fgetcsv( $h, 0, ';', '"', '' ) ) ) {
+			if ( array( null ) === $l ) {
+				continue;
+			}
+			if ( null === $entete ) {
+				$entete = array_map(
+					static function ( $c ) {
+						return strtolower( trim( (string) $c ) );
+					},
+					$l
+				);
+				continue;
+			}
+			$row = array();
+			foreach ( $entete as $i => $k ) {
+				$row[ $k ] = trim( (string) ( $l[ $i ] ?? '' ) );
+			}
+			$out[] = $row;
+		}
+		fclose( $h ); // phpcs:ignore
+		if ( ! $entete || ! in_array( 'code renc', $entete, true ) || ! in_array( 'club rec', $entete, true ) ) {
+			throw new RuntimeException( 'Ce fichier ne ressemble pas à un export GH Extraction (colonnes « code renc » et « club rec » introuvables).' );
+		}
+		return $out;
+	}
+
+	/** « 01/12/2026 » + « 20:15:00 » → « 2026-12-01 20:15:00 » ; heure inconnue → minuit (heure à venir). */
+	private static function date_gh( $jour, $heure ) {
+		if ( ! preg_match( '#^(\d{2})/(\d{2})/(\d{4})$#', trim( (string) $jour ), $m ) ) {
+			return null;
+		}
+		$h = preg_match( '#^(\d{1,2}):(\d{2})#', trim( (string) $heure ), $t ) ? sprintf( '%02d:%02d:00', $t[1], $t[2] ) : '00:00:00';
+		return sprintf( '%04d-%02d-%02d', $m[3], $m[2], $m[1] ) . ' ' . $h;
+	}
+
+	/**
+	 * Importe un export GH Extraction : rencontres de la compétition loisirs où joue le club.
+	 * Un import officiel remplace les rencontres provisoires de la même période.
+	 *
+	 * @return array{ajoutes:int,maj:int,retires:int,provisoires_retires:int,ignores:int}
+	 * @throws RuntimeException
+	 */
+	public static function importer( $raw, $fichier = '' ) {
+		$rows   = self::lire_csv( $raw );
+		$d      = self::get();
+		$filtre = self::upper( $d['filtre'] );
+		$bilan  = array( 'ajoutes' => 0, 'maj' => 0, 'retires' => 0, 'provisoires_retires' => 0, 'ignores' => 0 );
+		$recus  = array();
+		foreach ( $rows as $r ) {
+			$comp = self::upper( $r['competition'] ?? '' );
+			if ( '' !== $filtre && false === strpos( $comp, $filtre ) ) {
+				++$bilan['ignores'];
+				continue; // autre compétition : déjà récupérée sur ffhandball.fr
+			}
+			$dom = self::est_nous( $r['num rec'] ?? '' );
+			$ext = self::est_nous( $r['num vis'] ?? '' );
+			if ( ! $dom && ! $ext ) {
+				++$bilan['ignores'];
+				continue;
+			}
+			$code = strtoupper( preg_replace( '/[^A-Za-z0-9]/', '', (string) ( $r['code renc'] ?? '' ) ) );
+			$date = self::date_gh( $r['le'] ?? '', $r['horaire'] ?? '' );
+			$prov = '' === $code || 0 === strpos( $code, 'PROV' );
+			if ( '' === $code ) {
+				$code = 'PROV' . ( $date ? str_replace( array( '-', ' ', ':' ), '', substr( $date, 0, 10 ) ) : wp_generate_password( 6, false ) );
+			}
+			$recus[ $code ] = array(
+				'code'       => $code,
+				'provisoire' => $prov,
+				'groupe'     => (string) ( $r['num poule'] ?? '' ),
+				'poule'      => (string) ( $r['poule'] ?? '' ),
+				'date'       => $date,
+				'domicile'   => $dom ? '' : self::nom_equipe( $r['club rec'] ?? '' ),
+				'exterieur'  => $ext ? '' : self::nom_equipe( $r['club vis'] ?? '' ),
+				'a_domicile' => $dom,
+				'nom_gh'     => self::nom_equipe( $dom ? ( $r['club rec'] ?? '' ) : ( $r['club vis'] ?? '' ) ),
+				'salle'      => (string) ( $r['nom salle'] ?? '' ),
+				'adresse'    => trim( (string) ( $r['adresse salle'] ?? '' ), " ,\t" ),
+				'cp'         => (string) ( $r['cp'] ?? '' ),
+				'ville'      => (string) ( $r['ville'] ?? '' ),
+			);
+		}
+		if ( ! $recus ) {
+			throw new RuntimeException( 'Aucune rencontre loisirs du club dans ce fichier (compétition contenant « ' . $d['filtre'] . ' », numéro de club se terminant par ' . self::club_id() . ').' );
+		}
+
+		$auj = wp_date( 'Y-m-d' );
+		$jour = static function ( $x ) {
+			return $x['date'] ? substr( $x['date'], 0, 10 ) : '';
+		};
+
+		// Période couverte par les rencontres officielles du fichier.
+		$min = '';
+		$max = '';
+		foreach ( $recus as $x ) {
+			if ( ! $x['provisoire'] && $x['date'] ) {
+				$max = max( $max, $jour( $x ) );
+				$min = '' === $min ? $jour( $x ) : min( $min, $jour( $x ) );
+			}
+		}
+
+		// 1. Rencontres du fichier.
+		foreach ( $recus as $code => $x ) {
+			if ( $x['provisoire'] && self::jour_officiel( array_merge( $d['rencontres'], $recus ), $jour( $x ) ) ) {
+				continue; // ce jour a déjà sa rencontre officielle
+			}
+			if ( isset( $d['rencontres'][ $code ] ) ) {
+				// Une date manquante dans Gest'Hand ne doit pas effacer celle déjà connue (feuille, calendrier provisoire).
+				if ( ! $x['date'] ) {
+					$x['date'] = $d['rencontres'][ $code ]['date'];
+				}
+				if ( $x !== $d['rencontres'][ $code ] ) {
+					++$bilan['maj'];
+				}
+			} else {
+				++$bilan['ajoutes'];
+			}
+			$d['rencontres'][ $code ] = $x;
+		}
+
+		// 2. Rencontre officielle sans date : elle prend la date de la rencontre provisoire passée contre le même adversaire.
+		foreach ( $d['rencontres'] as $code => $x ) {
+			if ( ! empty( $x['provisoire'] ) || $x['date'] ) {
+				continue;
+			}
+			foreach ( $d['rencontres'] as $k => $y ) {
+				if ( ! empty( $y['provisoire'] ) && $y['date'] && $jour( $y ) < $auj && self::meme_adversaire( $x, $y ) ) {
+					$d['rencontres'][ $code ]['date'] = $jour( $y ) . ' 00:00:00';
+					unset( $d['rencontres'][ $k ] );
+					++$bilan['provisoires_retires'];
+					break;
+				}
+			}
+		}
+
+		// 3. Rencontres provisoires remplacées : même jour qu'une officielle, ou à venir sur la période du calendrier officiel.
+		foreach ( $d['rencontres'] as $code => $x ) {
+			if ( empty( $x['provisoire'] ) ) {
+				continue;
+			}
+			$j = $jour( $x );
+			if ( self::jour_officiel( $d['rencontres'], $j ) || ( '' !== $max && '' !== $j && $j >= $auj && $j >= $min && $j <= $max ) ) {
+				unset( $d['rencontres'][ $code ] );
+				++$bilan['provisoires_retires'];
+			}
+		}
+
+		// 4. Rencontre officielle à venir disparue de Gest'Hand sur la période du fichier : annulée ou déplacée.
+		// (Les rencontres jouées sortent de l'export GH Extraction : elles restent.)
+		foreach ( $d['rencontres'] as $code => $x ) {
+			$j = $jour( $x );
+			if ( empty( $x['provisoire'] ) && ! isset( $recus[ $code ] ) && '' !== $j && $j >= $auj && '' !== $min && $j >= $min && $j <= $max && ! isset( $d['resultats'][ $code ]['score1'] ) ) {
+				unset( $d['rencontres'][ $code ] );
+				++$bilan['retires'];
+			}
+		}
+		array_unshift(
+			$d['imports'],
+			array(
+				'date'    => ( new DateTimeImmutable( 'now', wp_timezone() ) )->format( 'c' ),
+				'fichier' => sanitize_file_name( (string) $fichier ),
+				'bilan'   => $bilan,
+			)
+		);
+		$d['imports'] = array_slice( $d['imports'], 0, 10 );
+		self::put( $d );
+		self::publier();
+		return $bilan;
+	}
+
+	/** « SALLE DU BICENTENAIRE » → « Salle du Bicentenaire ». */
+	private static function titre( $s ) {
+		$s = mb_convert_case( mb_strtolower( trim( (string) $s ), 'UTF-8' ), MB_CASE_TITLE, 'UTF-8' );
+		$s = preg_replace_callback(
+			'/(?<=\s)(De|Du|Des|La|Le|Les|Et|Sur)(?=\s)/u',
+			static function ( $m ) {
+				return mb_strtolower( $m[1], 'UTF-8' );
+			},
+			$s
+		);
+		return preg_replace_callback(
+			"/(?<=\\s)([DL])'(\\p{L})/u",
+			static function ( $m ) {
+				return mb_strtolower( $m[1], 'UTF-8' ) . "'" . mb_strtoupper( $m[2], 'UTF-8' );
+			},
+			$s
+		);
+	}
+
+	/** Notre nom le plus fréquent dans Gest'Hand, sans numéro d'équipe (« VILLENEUVE LOISIRS 1 » → « VILLENEUVE LOISIRS »). */
+	private static function notre_nom( array $rencontres, $defaut ) {
+		$n = array();
+		foreach ( $rencontres as $r ) {
+			$k = trim( preg_replace( '/\s+\d+$/', '', (string) ( $r['nom_gh'] ?? '' ) ) );
+			if ( '' !== $k ) {
+				$n[ $k ] = ( $n[ $k ] ?? 0 ) + 1;
+			}
+		}
+		arsort( $n );
+		return $n ? (string) key( $n ) : $defaut;
+	}
+
+	/** Une rencontre officielle (non provisoire) a-t-elle lieu ce jour-là ? */
+	private static function jour_officiel( array $rencontres, $jour ) {
+		if ( '' === $jour ) {
+			return false;
+		}
+		foreach ( $rencontres as $y ) {
+			if ( empty( $y['provisoire'] ) && $y['date'] && substr( $y['date'], 0, 10 ) === $jour ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Même adversaire : un mot significatif en commun (« CLERMONT LOISIRS » et « CLERMONT L'HERAULT »). */
+	private static function meme_adversaire( array $a, array $b ) {
+		$mots = static function ( $r ) {
+			$nom = self::upper( $r['a_domicile'] ? $r['exterieur'] : $r['domicile'] );
+			$out = array();
+			foreach ( preg_split( '/[^\p{L}]+/u', $nom ) as $w ) {
+				if ( mb_strlen( $w ) >= 4 && ! in_array( $w, array( 'HANDBALL', 'LOISIRS', 'LOISIR', 'CLUB', 'SPORT', 'SPORTS' ), true ) ) {
+					$out[ mb_substr( $w, 0, 6 ) ] = true;
+				}
+			}
+			return $out;
+		};
+		return (bool) array_intersect_key( $mots( $a ), $mots( $b ) );
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Feuilles de match                                                   */
+	/* ------------------------------------------------------------------ */
+
+	/**
+	 * Enregistre le contenu d'une feuille de match lue.
+	 *
+	 * @param array $f       résultat de VHB_Fdm_Lecture::lire()
+	 * @param bool  $creer   créer la rencontre si elle n'est pas au calendrier (dépôt manuel)
+	 * @return string code de la rencontre
+	 * @throws RuntimeException feuille d'une autre compétition, ou d'un match sans le club
+	 */
+	public static function enregistrer_fdm( array $f, $creer = false ) {
+		$d    = self::get();
+		$code = $f['code'];
+		if ( ! isset( $d['rencontres'][ $code ] ) ) {
+			if ( ! $creer ) {
+				throw new RuntimeException( 'Rencontre ' . $code . ' absente du calendrier.' );
+			}
+			$filtre = self::upper( $d['filtre'] );
+			if ( '' !== $filtre && false === strpos( self::upper( $f['competition'] ), $filtre ) ) {
+				throw new RuntimeException( 'Cette feuille est celle d\'une autre compétition (' . $f['competition'] . ') : ses résultats viennent déjà de ffhandball.fr.' );
+			}
+			if ( ! $f['joueurs'] ) {
+				throw new RuntimeException( 'Aucun joueur du club sur cette feuille (numéro de club ' . self::club_id() . ').' );
+			}
+			// Côté du club : le tableau où figurent nos joueurs (recevant ou visiteur).
+			$dom = 'domicile' === $f['nous'];
+			$d['rencontres'][ $code ] = array(
+				'code'       => $code,
+				'provisoire' => false,
+				'groupe'     => $f['groupe'],
+				'poule'      => '',
+				'date'       => $f['date'],
+				'domicile'   => $dom ? '' : self::nom_equipe( $f['domicile'] ),
+				'exterieur'  => $dom ? self::nom_equipe( $f['exterieur'] ) : '',
+				'a_domicile' => $dom,
+				'nom_gh'     => self::nom_equipe( $dom ? $f['domicile'] : $f['exterieur'] ),
+				'salle'      => $f['salle'],
+				'adresse'    => '',
+				'cp'         => '',
+				'ville'      => '',
+			);
+			// Un provisoire du même jour est remplacé.
+			foreach ( $d['rencontres'] as $k => $y ) {
+				if ( ! empty( $y['provisoire'] ) && $y['date'] && $f['date'] && substr( $y['date'], 0, 10 ) === substr( $f['date'], 0, 10 ) ) {
+					unset( $d['rencontres'][ $k ] );
+				}
+			}
+		}
+		$r = &$d['rencontres'][ $code ];
+		if ( $f['date'] ) {
+			$r['date'] = $f['date']; // la feuille fait foi (heure réelle, match sans date dans Gest'Hand)
+		}
+		$ts    = VHB_Render::ts( $r['date'] );
+		$avait = $d['resultats'][ $code ] ?? array();
+		$d['resultats'][ $code ] = array(
+			'score1' => $f['score1'],
+			'score2' => $f['score2'],
+			'tt'     => $f['tt'],
+			'statut' => $f['statut'],
+			'lu'     => time(),
+			'final'  => ! empty( $avait['manuel'] ) || ( $ts ? time() >= $ts + self::DELAI_FINAL : true ),
+			'manuel' => ! empty( $avait['manuel'] ),
+		);
+		$d['stats'][ $code ] = array_map(
+			static function ( $j ) {
+				return array_intersect_key( $j, array_flip( array( 'nom', 'numero', 'capitaine', 'fille', 'buts', 'buts_fdm', '7m', 'tirs', 'arrets', 'av', '2min', 'dis' ) ) );
+			},
+			(array) $f['joueurs']
+		);
+		unset( $r );
+		self::put( $d );
+		return $code;
+	}
+
+	/** Dépôt manuel d'une feuille (PDF) depuis l'administration. */
+	public static function deposer( $pdf ) {
+		$d = self::get();
+		$f = VHB_Fdm_Lecture::lire( $pdf, self::club_id(), ! empty( $d['filles'] ) );
+		if ( null === $f['score1'] ) {
+			throw new RuntimeException( 'La feuille ' . $f['code'] . ' ne porte pas encore de score.' );
+		}
+		$code = self::enregistrer_fdm( $f, true );
+		$d    = self::get();
+		$d['resultats'][ $code ]['manuel'] = true;
+		$d['resultats'][ $code ]['final']  = true;
+		self::put( $d );
+		self::publier();
+		return $code;
+	}
+
+	/**
+	 * Cherche les feuilles des matchs passés sur le serveur de la FFHB.
+	 *
+	 * @return array{lues:int,absentes:int,erreurs:array<string,string>}
+	 */
+	public static function recuperer( VHB_Fetcher $fetcher, $max = self::MAX_TOUR ) {
+		$d     = self::get();
+		$bilan = array( 'lues' => 0, 'absentes' => 0, 'erreurs' => array() );
+		$tries = 0;
+		foreach ( $d['rencontres'] as $code => $r ) {
+			if ( ! empty( $r['provisoire'] ) || ! VHB_Fdm::valid( $code ) ) {
+				continue;
+			}
+			$res = $d['resultats'][ $code ] ?? array();
+			$ts  = VHB_Render::ts( $r['date'] );
+			if ( ! empty( $res['final'] ) ) {
+				continue;
+			}
+			if ( $ts && time() < $ts + self::DELAI_FDM ) {
+				continue; // pas encore joué
+			}
+			if ( ! empty( $res['lu'] ) && time() - (int) $res['lu'] < 12 * HOUR_IN_SECONDS ) {
+				continue; // déjà lue récemment, on la relira une fois après 48 h
+			}
+			if ( ! empty( $res['absent'] ) ) {
+				if ( time() - (int) $res['absent'] < 6 * HOUR_IN_SECONDS ) {
+					continue;
+				}
+				if ( $ts && time() > $ts + 21 * DAY_IN_SECONDS ) {
+					continue; // feuille jamais publiée : dépôt manuel
+				}
+			}
+			if ( $tries++ >= $max ) {
+				break;
+			}
+			try {
+				$pdf = $fetcher->get( VHB_Fdm::remote_url( $code ), 1.0 );
+				$f   = VHB_Fdm_Lecture::lire( $pdf, self::club_id(), ! empty( $d['filles'] ) );
+				if ( $f['code'] !== $code || null === $f['score1'] ) {
+					throw new RuntimeException( 'feuille sans score' );
+				}
+				self::enregistrer_fdm( $f );
+				++$bilan['lues'];
+			} catch ( Throwable $e ) {
+				$d2 = self::get();
+				if ( empty( $d2['resultats'][ $code ]['score1'] ) ) {
+					$d2['resultats'][ $code ] = array_merge( $d2['resultats'][ $code ] ?? array(), array( 'absent' => time() ) );
+					self::put( $d2 );
+				}
+				if ( $e instanceof VHB_Fetch_Exception && 404 === $e->getCode() ) {
+					++$bilan['absentes'];
+				} else {
+					$bilan['erreurs'][ $code ] = $e->getMessage();
+				}
+			}
+			$d = self::get();
+		}
+		return $bilan;
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Compétition pour l'affichage                                        */
+	/* ------------------------------------------------------------------ */
+
+	/**
+	 * Données de la compétition, au format de VHB_Fetcher::team().
+	 *
+	 * @param bool $tout vrai pour l'administration : garde les matchs passés sans résultat
+	 *                   (feuille pas encore lue), qui ne doivent pas s'afficher « à venir » sur le site.
+	 */
+	public static function comp_data( array $cfg, $tout = false ) {
+		$d      = self::get();
+		$salles = VHB_Settings::salles();
+		$lib    = '' !== trim( $d['libelle'] ) ? trim( $d['libelle'] ) : self::notre_nom( $d['rencontres'], $cfg['nom'] );
+		$renc   = array();
+		foreach ( $d['rencontres'] as $code => $r ) {
+			$res   = $d['resultats'][ $code ] ?? array();
+			$s1    = isset( $res['score1'] ) && '' !== (string) $res['score1'] ? (string) $res['score1'] : null;
+			$s2    = isset( $res['score2'] ) && '' !== (string) $res['score2'] ? (string) $res['score2'] : null;
+			$joue  = null !== $s1 && null !== $s2;
+			$forf  = $joue && false !== stripos( (string) ( $res['statut'] ?? '' ), 'forfait' );
+			$cle   = self::upper( $r['salle'] );
+			$salle = $salles[ $cle ] ?? null;
+			$lieu  = $salle ? $salle['nom'] : ( '' !== $r['salle'] ? self::titre( $r['salle'] ) : '' );
+			$adr   = $salle ? $salle['adresse'] : trim( $r['adresse'] . ( '' !== $r['cp'] . $r['ville'] ? ', ' . trim( $r['cp'] . ' ' . self::titre( $r['ville'] ) ) : '' ), ' ,' );
+			$renc[] = array(
+				'id'            => $code,
+				'journee'       => 0,
+				'journee_debut' => '',
+				'journee_fin'   => '',
+				'date'          => $r['date'],
+				'domicile'      => $r['a_domicile'] ? $lib : $r['domicile'],
+				'exterieur'     => $r['a_domicile'] ? $r['exterieur'] : $lib,
+				'score1'        => $s1,
+				'score2'        => $s2,
+				'joue'          => $joue,
+				'forfait'       => $forf,
+				'forfait_de'    => '',
+				'a_domicile'    => (bool) $r['a_domicile'],
+				'logo1'         => '',
+				'logo2'         => '',
+				'lieu'          => $lieu,
+				'adresse'       => $adr,
+				'lat'           => $salle ? $salle['lat'] : null,
+				'lon'           => $salle ? $salle['lon'] : null,
+				'url'           => '',
+				'phase'         => '',
+				'fdm'           => '', // feuille non proposée au public (statistiques nominatives)
+				'tt'            => (array) ( $res['tt'] ?? array() ),
+				'provisoire'    => ! empty( $r['provisoire'] ),
+			);
+		}
+		// Journée = rang chronologique du match dans la saison (« notre 3e match »).
+		usort(
+			$renc,
+			static function ( $a, $b ) {
+				$ta = VHB_Render::ts( $a['date'] );
+				$tb = VHB_Render::ts( $b['date'] );
+				if ( $ta && $tb ) {
+					return $ta <=> $tb;
+				}
+				return $ta ? -1 : ( $tb ? 1 : 0 );
+			}
+		);
+		foreach ( $renc as $i => &$r ) {
+			$r['journee'] = $i + 1;
+		}
+		unset( $r );
+		if ( ! $tout ) {
+			$renc = array_values(
+				array_filter(
+					$renc,
+					static function ( $r ) {
+						$ts = VHB_Render::ts( $r['date'] );
+						return $r['joue'] || ! $ts || time() < $ts + DAY_IN_SECONDS;
+					}
+				)
+			);
+		}
+		return array(
+			'slug'             => $cfg['slug'],
+			'equipe'           => $cfg['nom'],
+			'libelle'          => $lib,
+			'competition'      => $d['nom'],
+			'poule'            => '',
+			'classement_actif' => false,
+			'entente'          => ! empty( $cfg['entente'] ),
+			'publie'           => true,
+			'page'             => '',
+			'ics'              => '',
+			'poule_url'        => '',
+			'lieux_ok'         => true,
+			'rencontres'       => $renc,
+			'classement'       => array(),
+			'maj'              => ( new DateTimeImmutable( 'now', wp_timezone() ) )->format( 'c' ),
+		);
+	}
+
+	/** Recalcule la compétition dans la copie locale des résultats et vide le cache des pages. */
+	public static function publier() {
+		$d   = self::get();
+		$cfg = '' !== $d['equipe'] ? VHB_Settings::equipe( $d['equipe'] ) : null;
+		if ( ! $cfg ) {
+			return false;
+		}
+		VHB_Store::save_comp( $cfg['slug'], self::CLE, self::comp_data( $cfg ) );
+		VHB_Cache::flush_pages();
+		do_action( 'vhb_gesthand_publie' );
+		return true;
+	}
+
+	/** Passage du cron pour la compétition Gest'Hand d'une équipe. */
+	public static function cron( array $cfg, VHB_Fetcher $fetcher ) {
+		$bilan = self::recuperer( $fetcher );
+		VHB_Store::save_comp( $cfg['slug'], self::CLE, self::comp_data( $cfg ) );
+		return $bilan;
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Statistiques (administration)                                       */
+	/* ------------------------------------------------------------------ */
+
+	/** Totaux de la saison par joueur, du plus grand nombre de buts au plus petit. */
+	public static function totaux() {
+		$d   = self::get();
+		$out = array();
+		foreach ( $d['stats'] as $code => $joueurs ) {
+			foreach ( (array) $joueurs as $j ) {
+				$k = $j['nom'];
+				if ( ! isset( $out[ $k ] ) ) {
+					$out[ $k ] = array( 'nom' => $k, 'fille' => ! empty( $j['fille'] ), 'matchs' => 0, 'buts' => 0, 'tirs' => 0, '7m' => 0, 'arrets' => 0, '2min' => 0, 'av' => 0, 'dis' => 0, 'numeros' => array() );
+				}
+				$t = &$out[ $k ];
+				++$t['matchs'];
+				foreach ( array( 'buts', 'tirs', '7m', 'arrets', '2min', 'av', 'dis' ) as $c ) {
+					$t[ $c ] += (int) ( $j[ $c ] ?? 0 );
+				}
+				if ( '' !== (string) ( $j['numero'] ?? '' ) ) {
+					$t['numeros'][ (string) $j['numero'] ] = true;
+				}
+				unset( $t );
+			}
+		}
+		uasort(
+			$out,
+			static function ( $a, $b ) {
+				return array( $b['buts'], $b['arrets'], $a['nom'] ) <=> array( $a['buts'], $a['arrets'], $b['nom'] );
+			}
+		);
+		return array_values( $out );
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Export et import de l'extension                                     */
+	/* ------------------------------------------------------------------ */
+
+	/** Pour l'export JSON : calendrier, résultats et réglages, sans les statistiques nominatives. */
+	public static function export() {
+		$d = self::get();
+		unset( $d['stats'] );
+		return $d;
+	}
+
+	public static function import( array $o ) {
+		$d = array_merge( self::defaults(), array_intersect_key( $o, self::defaults() ) );
+		$d['stats'] = self::get()['stats'];
+		self::put( $d );
+		self::publier();
+	}
+
+	public static function clear() {
+		delete_option( self::OPTION );
+	}
+}

@@ -229,6 +229,19 @@ class VHB_Cron {
 		$nom = $cfg['nom'] . ( count( $cfg['competitions'] ) > 1 ? ' (' . VHB_Store::comp_label( $comp ) . ')' : '' );
 		$key = $cfg['slug'] . '|' . $comp['cle'];
 		try {
+			if ( VHB_Gesthand::TYPE === $comp['type'] ) {
+				// Rencontres Gest'Hand : feuilles de match des matchs passés, pas de page FFHB.
+				$b = VHB_Gesthand::cron( $cfg, $f );
+				foreach ( $b['erreurs'] as $code => $msg ) {
+					$run['warnings'][] = $nom . ' : feuille ' . $code . ' illisible (' . $msg . ')';
+				}
+				$run['fdm']     = (int) ( $run['fdm'] ?? 0 ) + $b['lues'];
+				$run['ok'][]    = $nom;
+				$run['dernier'] = $nom . ' : ok';
+				$fails[ $key ]  = 0;
+				update_option( self::FAILS, $fails, false );
+				return;
+			}
 			$data = $f->team( array_merge( $cfg, array( 'url' => $comp['url'] ) ) );
 			VHB_Store::save_comp( $cfg['slug'], $comp['cle'], $data );
 			foreach ( $f->warnings as $w ) {

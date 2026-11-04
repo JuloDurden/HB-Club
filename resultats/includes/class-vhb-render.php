@@ -246,6 +246,9 @@ class VHB_Render {
 
 		$liens = array();
 		foreach ( $v['competitions'] as $c ) {
+			if ( '' === (string) $c['page'] ) {
+				continue; // rencontres Gest'Hand : pas de page FFHB
+			}
 			$liens[] = '<a href="' . esc_url( $c['page'] ) . '" target="_blank" rel="noopener">' . esc_html( $v['multi'] ? $c['nom'] . ' sur le site de la FFHB' : 'Voir la compétition sur le site de la FFHB' ) . '</a>';
 		}
 		if ( $liens ) {
@@ -267,12 +270,13 @@ class VHB_Render {
 			array_filter(
 				$v['competitions'],
 				static function ( $c ) {
-					return 'coupe' !== $c['type'];
+					return 'coupe' !== $c['type'] && 'gesthand' !== $c['type'];
 				}
 			)
 		);
 		if ( ! $champs ) {
-			return $h . self::msg( 'Pas de classement : cette équipe ne joue que des matchs de coupe.' );
+			$gh = array_filter( $v['competitions'], static function ( $c ) { return 'gesthand' === $c['type']; } );
+			return $h . self::msg( $gh ? 'Pas de classement pour les rencontres loisirs : on y joue pour le plaisir.' : 'Pas de classement : cette équipe ne joue que des matchs de coupe.' );
 		}
 		foreach ( $champs as $c ) {
 			if ( count( $champs ) > 1 ) {
@@ -413,7 +417,7 @@ class VHB_Render {
 
 		if ( $ts ) {
 			$when = '<span class="vhb-day">' . esc_html( self::JOURS_ABR[ (int) wp_date( 'N', $ts ) ] . ' ' . wp_date( 'j', $ts ) . ' ' . self::MOIS_ABR[ (int) wp_date( 'n', $ts ) ] ) . '</span>'
-				. '<span class="vhb-hour">' . esc_html( wp_date( 'G\hi', $ts ) ) . '</span>';
+				. ( '0000' === wp_date( 'Hi', $ts ) ? '<span class="vhb-hour vhb-hour--tbc">heure à venir</span>' : '<span class="vhb-hour">' . esc_html( wp_date( 'G\hi', $ts ) ) . '</span>' );
 		} else {
 			$when = '<span class="vhb-day">' . esc_html( $r['tour'] ?? 'J' . (int) $r['journee'] ) . '</span>'
 				. '<span class="vhb-hour vhb-hour--tbc">' . esc_html( self::journee_range( $r ) ?: 'Date à venir' ) . '</span>';

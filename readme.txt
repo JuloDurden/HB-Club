@@ -3,7 +3,7 @@ Contributors: julodurden
 Tags: handball, club, sport, ffhb, résultats
 Requires at least: 6.1
 Requires PHP: 7.4
-Stable tag: 3.2.0
+Stable tag: 3.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
@@ -126,6 +126,15 @@ Copyright (C) 2026 Julien Clavel.
 Ce programme est un logiciel libre : vous pouvez le redistribuer et le modifier selon les termes de la Licence publique générale GNU (GPL) publiée par la Free Software Foundation, version 2 ou (à votre choix) toute version ultérieure. Il est distribué sans aucune garantie. Texte complet : fichier LICENSE.
 
 == Journal des versions ==
+
+= 3.3.0 =
+* Rencontres loisirs (VHB > Rencontres loisirs) : rencontres saisies dans Gest'Hand mais absentes de ffhandball.fr. Calendrier importé d'un export GH Extraction (CSV) ; un fichier provisoire au même format (codes PROV…) sert en attendant le calendrier officiel, qui le remplace jusqu'à sa dernière date.
+* Résultats automatiques : après chaque match, la feuille de match FDME est téléchargée sur le serveur de la FFHB et lue (score, tiers-temps, statut). Dépôt manuel d'une feuille en secours.
+* Statistiques des joueurs du club, visibles uniquement dans l'administration : prénom et initiale du nom, buts, tirs, 7 m, arrêts, 2 min, par match et pour la saison. Option « un but féminin compte double » (statistiques des joueuses divisées par 2, score officiel inchangé). Ni licence, ni joueurs adverses, ni blessures ; la feuille n'est pas proposée au public.
+* Les rencontres s'ajoutent à l'équipe choisie comme une compétition de plus : accueil, Nos équipes, blocs Résultats, agenda. Numéro de match dans la saison (J1, J2…).
+* Lecture des feuilles de match sans bibliothèque externe (PDF chiffré AES-256, mot de passe vide) ; OpenSSL requis.
+* Résultats : un match sans heure connue affiche « heure à venir ».
+* Export et import : rencontres loisirs (calendrier, résultats, réglages), sans les statistiques.
 
 = 3.2.0 =
 * Données des pages : « breves » (alertes en cours de Vie du club : message, lien, niveau) et « boutique » (si elle est ouverte : titre, texte, lien), pour la page d'accueil de la refonte.

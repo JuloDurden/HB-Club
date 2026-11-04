@@ -24,6 +24,9 @@ require_once VHB_FFHB_DIR . 'includes/class-vhb-store.php';
 require_once VHB_FFHB_DIR . 'includes/class-vhb-logos.php';
 require_once VHB_FFHB_DIR . 'includes/class-vhb-cache.php';
 require_once VHB_FFHB_DIR . 'includes/class-vhb-fdm.php';
+require_once VHB_FFHB_DIR . 'includes/class-vhb-pdf.php';
+require_once VHB_FFHB_DIR . 'includes/class-vhb-fdm-lecture.php';
+require_once VHB_FFHB_DIR . 'includes/class-vhb-gesthand.php';
 require_once VHB_FFHB_DIR . 'includes/class-vhb-agenda.php';
 require_once VHB_FFHB_DIR . 'includes/class-vhb-cron.php';
 require_once VHB_FFHB_DIR . 'includes/class-vhb-rest.php';
@@ -33,6 +36,7 @@ require_once VHB_FFHB_DIR . 'includes/class-vhb-blocks.php';
 if ( is_admin() ) {
 	require_once VHB_FFHB_DIR . 'includes/class-vhb-admin.php';
 	require_once VHB_FFHB_DIR . 'includes/class-vhb-domicile.php';
+	require_once VHB_FFHB_DIR . 'includes/class-vhb-gesthand-admin.php';
 }
 
 /** Démarrage du module (appelé sur plugins_loaded par vhb-club.php). */
@@ -48,10 +52,12 @@ function vhb_resultats_demarrer() {
 	VHB_Cron::init(); // replanifie la tâche horaire si elle manque (après désactivation de l'ancienne extension)
 	VHB_Rest::init();
 	VHB_Fdm::init();
+	VHB_Gesthand::init();
 	VHB_Agenda::init();
 	VHB_Render::init();
 	VHB_Blocks::init();
 	if ( is_admin() ) {
 		VHB_Admin::init();
+		VHB_Gesthand_Admin::init();
 	}
 }

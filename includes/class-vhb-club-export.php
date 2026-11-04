@@ -85,6 +85,10 @@ class VHB_Club_Export {
 		foreach ( $out['options']['photos'] as $p ) {
 			self::media( $p['id'] );
 		}
+		if ( class_exists( 'VHB_Gesthand' ) && get_option( VHB_Gesthand::OPTION ) ) {
+			// Rencontres loisirs (calendrier, résultats, réglages) ; pas les statistiques nominatives.
+			$out['options']['loisirs'] = VHB_Gesthand::export();
+		}
 		$res = self::resultats_option();
 		if ( $res ) {
 			$out['options']['resultats'] = $res;
@@ -357,6 +361,11 @@ class VHB_Club_Export {
 			// Valeur déjà au format enregistré : pas de passage par la validation du formulaire.
 			remove_all_filters( 'sanitize_option_' . VHB_Settings::OPTION );
 			update_option( VHB_Settings::OPTION, $res, false );
+		}
+
+		// 6. Rencontres loisirs Gest'Hand (exports 3.3.0 et plus).
+		if ( isset( $o['loisirs'] ) && is_array( $o['loisirs'] ) && class_exists( 'VHB_Gesthand' ) ) {
+			VHB_Gesthand::import( $o['loisirs'] );
 		}
 
 		VHB_Club_Cache::changed();

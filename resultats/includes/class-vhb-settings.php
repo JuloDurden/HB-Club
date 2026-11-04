@@ -86,6 +86,11 @@ class VHB_Settings {
 			}
 			$e                 = array_merge( self::EQUIPE_DEFAUT, $e );
 			$e['competitions'] = self::competitions_of( $e, $s['saison'] );
+			/**
+			 * Filtre « vhb_ffhb_competitions » : compétitions venues d'une autre source
+			 * que ffhandball.fr (rencontres loisirs de Gest'Hand, type « gesthand »).
+			 */
+			$e['competitions'] = array_values( (array) apply_filters( 'vhb_ffhb_competitions', $e['competitions'], $e ) );
 			$e['url']          = $e['competitions'] ? $e['competitions'][0]['url'] : '';
 			$e['entente']    = ! empty( $e['entente'] );
 			$e['classement'] = ! empty( $e['classement'] );
