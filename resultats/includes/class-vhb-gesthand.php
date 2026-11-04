@@ -33,6 +33,8 @@ class VHB_Gesthand {
 	const DELAI_FINAL = 2 * DAY_IN_SECONDS;
 	/** Feuilles téléchargées au plus par passage du cron. */
 	const MAX_TOUR = 6;
+	/** Codes voisins essayés au plus par passage (une feuille absente coûte une requête). */
+	const MAX_SONDES = 16;
 
 	public static function init() {
 		add_filter( 'vhb_ffhb_competitions', array( __CLASS__, 'competitions' ), 10, 2 );
@@ -54,6 +56,7 @@ class VHB_Gesthand {
 			'resultats'  => array(),
 			'stats'      => array(),
 			'imports'    => array(),
+			'sondes'     => array(), // codes voisins déjà essayés : code => horodatage
 		);
 	}
 
@@ -625,7 +628,118 @@ class VHB_Gesthand {
 			}
 			$d = self::get();
 		}
+		if ( $tries < $max ) {
+			$bilan['trouvees'] = self::sonder( $fetcher, self::MAX_SONDES );
+			$bilan['lues']    += $bilan['trouvees'];
+		}
 		return $bilan;
+	}
+
+	/**
+	 * Ajoute une rencontre jouée à partir de son code (Gest'Hand), absente de l'export
+	 * GH Extraction parce qu'elle est déjà jouée : la feuille est lue sur le serveur de la FFHB.
+	 *
+	 * @throws RuntimeException
+	 */
+	public static function ajouter_code( $code, VHB_Fetcher $fetcher ) {
+		$code = strtoupper( preg_replace( '/[^A-Za-z0-9]/', '', (string) $code ) );
+		if ( ! VHB_Fdm::valid( $code ) || 0 === strpos( $code, 'PROV' ) ) {
+			throw new RuntimeException( 'Code rencontre invalide (ex. WAHAPQE).' );
+		}
+		try {
+			$pdf = $fetcher->get( VHB_Fdm::remote_url( $code ), 1.0 );
+		} catch ( VHB_Fetch_Exception $e ) {
+			throw new RuntimeException( 404 === $e->getCode() ? 'La FFHB n\'a pas (encore) publié la feuille ' . $code . '. Déposez le PDF si vous l\'avez.' : $e->getMessage() );
+		}
+		$d = self::get();
+		$f = VHB_Fdm_Lecture::lire( $pdf, self::club_id(), ! empty( $d['filles'] ) );
+		if ( null === $f['score1'] ) {
+			throw new RuntimeException( 'La feuille ' . $code . ' ne porte pas encore de score.' );
+		}
+		self::enregistrer_fdm( $f, true );
+		self::publier();
+		return $code;
+	}
+
+	/** « WAHAPQF » + 1 = « WAHAPQG » (codes FDME en lettres, en base 26). */
+	private static function voisin( $code, $pas ) {
+		if ( ! preg_match( '/^[A-Z]+$/', $code ) ) {
+			return '';
+		}
+		$c = str_split( $code );
+		$i = count( $c ) - 1;
+		$r = (int) $pas;
+		while ( 0 !== $r && $i >= 0 ) {
+			$v      = ord( $c[ $i ] ) - 65 + $r;
+			$r      = (int) floor( $v / 26 );
+			$c[ $i ] = chr( 65 + ( ( $v % 26 ) + 26 ) % 26 );
+			--$i;
+		}
+		return 0 === $r ? implode( '', $c ) : '';
+	}
+
+	/**
+	 * Les matchs déjà joués sortent de l'export GH Extraction. Tant qu'une rencontre provisoire
+	 * passée n'a pas de résultat, on essaie les codes voisins des rencontres connues (Gest'Hand
+	 * numérote les rencontres d'une compétition à la suite) : une feuille de la compétition où
+	 * jouent nos joueurs est ajoutée.
+	 *
+	 * @return int feuilles trouvées
+	 */
+	private static function sonder( VHB_Fetcher $fetcher, $max ) {
+		$d     = self::get();
+		$auj   = wp_date( 'Y-m-d' );
+		$reste = false;
+		foreach ( $d['rencontres'] as $r ) {
+			if ( ! empty( $r['provisoire'] ) && $r['date'] && substr( $r['date'], 0, 10 ) < $auj ) {
+				$reste = true;
+			}
+		}
+		if ( ! $reste ) {
+			return 0;
+		}
+		$connus = array();
+		foreach ( array_keys( $d['rencontres'] ) as $code ) {
+			if ( 0 !== strpos( $code, 'PROV' ) ) {
+				$connus[ $code ] = true;
+			}
+		}
+		$cand = array();
+		// Du plus proche au plus lointain, tous codes confondus.
+		foreach ( array( -1, 1, -2, 2, -3, 3, -4, 4 ) as $p ) {
+			foreach ( array_keys( $connus ) as $code ) {
+				$v = self::voisin( $code, $p );
+				if ( '' === $v || isset( $connus[ $v ] ) || isset( $cand[ $v ] ) ) {
+					continue;
+				}
+				if ( isset( $d['sondes'][ $v ] ) && time() - (int) $d['sondes'][ $v ] < 7 * DAY_IN_SECONDS ) {
+					continue;
+				}
+				$cand[ $v ] = true;
+			}
+		}
+		$trouvees = 0;
+		$n        = 0;
+		foreach ( array_keys( $cand ) as $v ) {
+			if ( $n++ >= $max ) {
+				break;
+			}
+			$d                  = self::get();
+			$d['sondes'][ $v ] = time();
+			self::put( $d );
+			try {
+				$pdf = $fetcher->get( VHB_Fdm::remote_url( $v ), 0.5 );
+				$f   = VHB_Fdm_Lecture::lire( $pdf, self::club_id(), ! empty( $d['filles'] ) );
+				if ( null === $f['score1'] || ! $f['joueurs'] || $f['code'] !== $v ) {
+					continue;
+				}
+				self::enregistrer_fdm( $f, true );
+				++$trouvees;
+			} catch ( Throwable $e ) {
+				continue; // pas de feuille, ou une autre compétition
+			}
+		}
+		return $trouvees;
 	}
 
 	/* ------------------------------------------------------------------ */

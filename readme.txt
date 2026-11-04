@@ -3,7 +3,7 @@ Contributors: julodurden
 Tags: handball, club, sport, ffhb, résultats
 Requires at least: 6.1
 Requires PHP: 7.4
-Stable tag: 3.3.1
+Stable tag: 3.3.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
@@ -126,6 +126,9 @@ Copyright (C) 2026 Julien Clavel.
 Ce programme est un logiciel libre : vous pouvez le redistribuer et le modifier selon les termes de la Licence publique générale GNU (GPL) publiée par la Free Software Foundation, version 2 ou (à votre choix) toute version ultérieure. Il est distribué sans aucune garantie. Texte complet : fichier LICENSE.
 
 == Journal des versions ==
+
+= 3.3.2 =
+* Rencontres loisirs : les matchs joués sortent de l'export GH Extraction. Nouveau champ « Ajouter un match joué » : son code rencontre (ex. WAHAPQE) suffit, la feuille est lue sur le serveur de la FFHB. Tant qu'un match provisoire passé n'a pas de résultat, chaque mise à jour essaie aussi les codes voisins des rencontres connues (16 au plus, chaque code une fois par semaine).
 
 = 3.3.1 =
 * Rencontres loisirs : blasons. Le nôtre est repris des rencontres FFHB ; celui d'un adversaire vient du club FFHB qui lui ressemble (« LA CADOULE 2 » : La Cadoule HB), ou du choix fait dans « Blasons des adversaires » (club déjà rencontré en FFHB, image de la médiathèque, ou aucun : initiales).

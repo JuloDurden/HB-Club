@@ -14,7 +14,7 @@ class VHB_Gesthand_Admin {
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ), 20 );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'assets' ) );
-		foreach ( array( 'reglages', 'import', 'fdm', 'relire', 'provisoires', 'blasons' ) as $a ) {
+		foreach ( array( 'reglages', 'import', 'fdm', 'relire', 'provisoires', 'blasons', 'code' ) as $a ) {
 			add_action( 'admin_post_vhb_gh_' . $a, array( __CLASS__, 'post_' . $a ) );
 		}
 	}
@@ -139,6 +139,16 @@ class VHB_Gesthand_Admin {
 		self::back( 'Feuille de match ' . $code . ' lue : score et statistiques enregistrés.' );
 	}
 
+	public static function post_code() {
+		self::guard( 'code' );
+		try {
+			$code = VHB_Gesthand::ajouter_code( wp_unslash( $_POST['code'] ?? '' ), new VHB_Fetcher( VHB_Settings::get()['club_id'] ) ); // phpcs:ignore
+		} catch ( Throwable $e ) {
+			self::back( 'Rencontre non ajoutée : ' . $e->getMessage(), 'erreur' );
+		}
+		self::back( 'Rencontre ' . $code . ' ajoutée : feuille lue sur le serveur de la FFHB (score et statistiques).' );
+	}
+
 	public static function post_relire() {
 		self::guard( 'relire' );
 		if ( function_exists( 'set_time_limit' ) ) {
@@ -147,6 +157,9 @@ class VHB_Gesthand_Admin {
 		$b = VHB_Gesthand::recuperer( new VHB_Fetcher( VHB_Settings::get()['club_id'] ), 10 );
 		VHB_Gesthand::publier();
 		$msg = sprintf( '%d feuille(s) lue(s)', $b['lues'] );
+		if ( ! empty( $b['trouvees'] ) ) {
+			$msg .= sprintf( ' (dont %d match(s) joué(s) retrouvé(s) par leur code)', $b['trouvees'] );
+		}
 		if ( $b['absentes'] ) {
 			$msg .= sprintf( ', %d pas encore publiée(s) par la FFHB', $b['absentes'] );
 		}
@@ -367,6 +380,16 @@ class VHB_Gesthand_Admin {
 			<?php else : ?>
 				<p><em>Aucun adversaire pour l'instant.</em></p>
 			<?php endif; ?>
+
+			<h2>Ajouter un match joué</h2>
+			<form method="post" action="<?php echo $post; // phpcs:ignore ?>" class="vhb-gh-inline">
+				<input type="hidden" name="action" value="vhb_gh_code">
+				<?php wp_nonce_field( 'vhb_gh_code' ); ?>
+				<label for="vhb-gh-code">Code rencontre</label>
+				<input type="text" name="code" id="vhb-gh-code" placeholder="ex. WAHAPQE" pattern="[A-Za-z0-9]{4,16}" required style="text-transform:uppercase;width:12em">
+				<?php submit_button( 'Lire sa feuille', 'secondary', 'submit', false ); ?>
+			</form>
+			<p class="description" style="max-width:820px">Les matchs joués disparaissent de l'export GH Extraction. Indiquez le code d'un match déjà joué (visible dans Gest'Hand) : sa feuille est lue sur le serveur de la FFHB et remplace la rencontre provisoire du même jour. À chaque mise à jour, le site essaie aussi seul les codes voisins des rencontres connues, tant qu'un match provisoire passé n'a pas de résultat.</p>
 
 			<h2>Déposer une feuille de match</h2>
 			<form method="post" action="<?php echo $post; // phpcs:ignore ?>" enctype="multipart/form-data" class="vhb-gh-inline">
