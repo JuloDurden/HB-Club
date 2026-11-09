@@ -3,7 +3,7 @@ Contributors: julodurden
 Tags: handball, club, sport, ffhb, résultats
 Requires at least: 6.1
 Requires PHP: 7.4
-Stable tag: 3.4.0
+Stable tag: 3.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
@@ -126,6 +126,10 @@ Copyright (C) 2026 Julien Clavel.
 Ce programme est un logiciel libre : vous pouvez le redistribuer et le modifier selon les termes de la Licence publique générale GNU (GPL) publiée par la Free Software Foundation, version 2 ou (à votre choix) toute version ultérieure. Il est distribué sans aucune garantie. Texte complet : fichier LICENSE.
 
 == Journal des versions ==
+
+= 3.4.1 =
+* Noms d'équipe (Résultats FFHB > Tables de réécriture) appliqués aussi aux données lues par les pages de la refonte (Nos équipes, accueil) : nom de l'équipe, adversaires, classements.
+* Rencontres loisirs : date au format ISO 8601, comme les matchs FFHB (Safari sur iPhone ne lisait pas l'ancien format).
 
 = 3.4.0 =
 * Photos du site (VHB > Photos, onglet « Pages du site ») : les photos des pages de la refonte se choisissent dans la médiathèque, sans toucher aux pages. Emplacements : diaporama de l'accueil, en-têtes (plusieurs photos qui défilent en fondu) et vignettes des pages Pratiquer, BabyHand, U9, Compétition, Loisir et HandFit. Point de cadrage et ordre des photos ; texte alternatif repris de la médiathèque ; taille d'image adaptée à l'écran. Un emplacement vide garde le fond de la maquette ; les légendes « [Photo : …] » ne s'affichent plus.

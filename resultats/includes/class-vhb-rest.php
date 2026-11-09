@@ -61,15 +61,23 @@ class VHB_Rest {
 			$r['salle']     = $r['lieu'] ? VHB_Render::lieu_affiche( $r ) : null;
 			$r['feuille']   = VHB_Fdm::link( $r, $v['fdm_mode'] ?? 'masquees' );
 			unset( $r['fdm'] );
+			// Noms d'équipe (table de l'admin), une fois les comparaisons faites sur les noms FFHB.
+			foreach ( array( 'domicile', 'exterieur', 'forfait_de', 'nous' ) as $k ) {
+				if ( isset( $r[ $k ] ) && '' !== (string) $r[ $k ] ) {
+					$r[ $k ] = VHB_Render::label( $r[ $k ] );
+				}
+			}
 		}
 		unset( $r );
 		foreach ( $v['classement'] as &$c ) {
 			$c['logo_url'] = $b && $c['vhb'] ? $b : VHB_Logos::url( $c['logo'] ?? '' );
+			$c['equipe']   = VHB_Render::label( $c['equipe'] ?? '' );
 		}
 		unset( $c );
 		foreach ( $v['competitions'] as &$c ) {
 			foreach ( $c['classement'] as &$l ) {
 				$l['logo_url'] = $b && $l['vhb'] ? $b : VHB_Logos::url( $l['logo'] ?? '' );
+				$l['equipe']   = VHB_Render::label( $l['equipe'] ?? '' );
 			}
 			unset( $l );
 			if ( empty( $v['afficher_classement'] ) ) {
@@ -82,6 +90,7 @@ class VHB_Rest {
 			$v['classement'] = array(); // masqué par réglage : cohérent avec l'affichage
 		}
 		// Photo d'équipe (VHB > Photos d'équipe), pour la carte Panini de la page Nos équipes.
+		$v['libelle'] = VHB_Render::label( $v['libelle'] ?? '' );
 		$v['photo'] = class_exists( 'VHB_Club_Photos' ) ? VHB_Club_Photos::pour_equipe( $v['slug'] ?? '' ) : null;
 		return $v;
 	}

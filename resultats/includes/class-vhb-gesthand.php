@@ -776,7 +776,7 @@ class VHB_Gesthand {
 				'journee'       => 0,
 				'journee_debut' => '',
 				'journee_fin'   => '',
-				'date'          => $r['date'],
+				'date'          => $r['date'] && VHB_Render::ts( $r['date'] ) ? wp_date( 'c', VHB_Render::ts( $r['date'] ) ) : '', // ISO 8601 comme la FFHB (Safari refuse « 2026-11-03 20:15 »)
 				'domicile'      => $r['a_domicile'] ? $lib : $r['domicile'],
 				'exterieur'     => $r['a_domicile'] ? $r['exterieur'] : $lib,
 				'score1'        => $s1,
