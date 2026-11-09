@@ -130,6 +130,7 @@ Ce programme est un logiciel libre : vous pouvez le redistribuer et le modifier 
 = 3.4.1 =
 * Noms d'équipe (Résultats FFHB > Tables de réécriture) appliqués aussi aux données lues par les pages de la refonte (Nos équipes, accueil) : nom de l'équipe, adversaires, classements.
 * Rencontres loisirs : date au format ISO 8601, comme les matchs FFHB (Safari sur iPhone ne lisait pas l'ancien format).
+* Menu VHB : intertitres en blanc et en gras, séparés par un filet ; pages en retrait sous leur intertitre.
 
 = 3.4.0 =
 * Photos du site (VHB > Photos, onglet « Pages du site ») : les photos des pages de la refonte se choisissent dans la médiathèque, sans toucher aux pages. Emplacements : diaporama de l'accueil, en-têtes (plusieurs photos qui défilent en fondu) et vignettes des pages Pratiquer, BabyHand, U9, Compétition, Loisir et HandFit. Point de cadrage et ordre des photos ; texte alternatif repris de la médiathèque ; taille d'image adaptée à l'écran. Un emplacement vide garde le fond de la maquette ; les légendes « [Photo : …] » ne s'affichent plus.

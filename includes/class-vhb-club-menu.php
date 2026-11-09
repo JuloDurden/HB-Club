@@ -86,6 +86,11 @@ class VHB_Club_Menu {
 			return;
 		}
 		$css .= '#toplevel_page_' . $m . ' .wp-submenu li:has(> a[href="admin.php?page=vhb-club-photos"]){display:none}';
-		echo '<style>' . $css . '#toplevel_page_' . esc_attr( $m ) . ' .wp-submenu li::before{display:block;margin:10px 12px 2px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(240,246,252,.5);pointer-events:none}#toplevel_page_' . esc_attr( $m ) . '.wp-not-current-submenu .wp-submenu li::before{margin-top:6px}</style>'; // phpcs:ignore
+		$p    = '#adminmenu #toplevel_page_' . esc_attr( $m ) . ' .wp-submenu';
+		$css .= $p . ' li::before{display:block;margin:12px 12px 4px;padding-top:9px;border-top:1px solid rgba(240,246,252,.16);font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#fff;pointer-events:none}';
+		$css .= '#adminmenu #toplevel_page_' . esc_attr( $m ) . '.wp-not-current-submenu .wp-submenu li::before{margin-top:8px}';
+		// Pages en retrait sous leur intertitre (le tableau de bord reste au bord).
+		$css .= $p . ' li:not(.wp-first-item):not(.wp-submenu-head) > a{padding-left:26px}';
+		echo '<style>' . $css . '</style>'; // phpcs:ignore
 	}
 }
