@@ -78,6 +78,40 @@ class VHB_Club_Types {
 
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register' ) );
+		add_filter( 'wp_insert_attachment_data', array( __CLASS__, 'media_sans_parent' ), 10, 2 );
+	}
+
+	/** Types de l'extension (non publics dans l'API REST). */
+	public static function types() {
+		return array( self::CATEGORIE, self::STAGE, self::LIEU, self::ENTENTE );
+	}
+
+	/**
+	 * Une image téléversée depuis une fiche VHB (événement, club en entente...) n'est pas
+	 * rattachée à la fiche : WordPress refuserait sinon de la montrer aux visiteurs dans
+	 * l'API REST (image mise en avant d'un article absente de l'accueil, par exemple).
+	 */
+	public static function media_sans_parent( $data, $postarr ) {
+		unset( $postarr );
+		if ( ! empty( $data['post_parent'] ) && in_array( get_post_type( (int) $data['post_parent'] ), self::types(), true ) ) {
+			$data['post_parent'] = 0;
+		}
+		return $data;
+	}
+
+	/** Détache les images déjà rattachées à une fiche VHB (mise à niveau 3.4.2). */
+	public static function detacher_medias() {
+		global $wpdb;
+		$types = self::types();
+		$in    = implode( ',', array_fill( 0, count( $types ), '%s' ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQLPlaceholders
+		$ids = $wpdb->get_col( $wpdb->prepare( "SELECT a.ID FROM {$wpdb->posts} a INNER JOIN {$wpdb->posts} p ON p.ID = a.post_parent WHERE a.post_type = 'attachment' AND p.post_type IN ($in)", $types ) );
+		foreach ( $ids as $id ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->update( $wpdb->posts, array( 'post_parent' => 0 ), array( 'ID' => (int) $id ) );
+			clean_post_cache( (int) $id );
+		}
+		return count( $ids );
 	}
 
 	/**

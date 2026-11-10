@@ -18,9 +18,11 @@ class VHB_Club_Demarrage {
 	const FLAG   = 'vhb_club_demarre';
 	const PROFIL = 'profil/donnees.json';
 
-	/** Mise à niveau d'une installation existante (rien à faire en 3.0.0). */
+	/** Mise à niveau d'une installation existante. */
 	public static function upgrade( $from ) {
-		unset( $from );
+		if ( '' !== (string) $from && version_compare( (string) $from, '3.4.2', '<' ) ) {
+			VHB_Club_Types::detacher_medias();
+		}
 	}
 
 	public static function activate() {

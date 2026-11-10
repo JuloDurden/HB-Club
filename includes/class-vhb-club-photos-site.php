@@ -154,6 +154,25 @@ class VHB_Club_Photos_Site {
 	}
 
 	/** Clé de la page affichée : dernier segment de l'adresse, « accueil » pour l'accueil (et /v2/). */
+	/**
+	 * Première photo de l'en-tête de chaque page (cartes « Pratiquer au VHB » de l'accueil).
+	 *
+	 * @return array<string,array{m:string,a:string,x:int,y:int}>
+	 */
+	public static function heros() {
+		$out = array();
+		foreach ( array_keys( self::emplacements() ) as $page ) {
+			if ( 'accueil' === $page ) {
+				continue;
+			}
+			$h = self::pour_page( $page )['hero'][0] ?? null;
+			if ( $h ) {
+				$out[ $page ] = array( 'm' => $h['l'], 'a' => $h['a'], 'x' => $h['x'], 'y' => $h['y'] );
+			}
+		}
+		return $out;
+	}
+
 	private static function page_courante() {
 		if ( is_front_page() ) {
 			return 'accueil';
@@ -187,6 +206,7 @@ class VHB_Club_Photos_Site {
 				array(
 					'page'   => $page,
 					'photos' => (object) ( '' !== $page ? self::pour_page( $page ) : array() ),
+					'heros'  => (object) ( 'accueil' === $page ? self::heros() : array() ),
 				)
 			) . ';'
 		);

@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'VHB_CLUB_VERSION', '3.4.1' );
+define( 'VHB_CLUB_VERSION', '3.4.2' );
 define( 'VHB_CLUB_DIR', plugin_dir_path( VHB_CLUB_FILE ) );
 define( 'VHB_CLUB_URL', plugin_dir_url( VHB_CLUB_FILE ) );
 if ( ! defined( 'VHB_MARQUE' ) ) {

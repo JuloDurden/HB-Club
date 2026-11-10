@@ -793,7 +793,8 @@ class VHB_Gesthand {
 				'lon'           => $salle ? $salle['lon'] : null,
 				'url'           => '',
 				'phase'         => '',
-				'fdm'           => '', // feuille non proposée au public (statistiques nominatives)
+				// Feuille publique du serveur de la FFHB (jamais celle déposée à la main), selon le réglage « Feuilles » de l'équipe.
+				'fdm'           => $joue && empty( $r['provisoire'] ) && 0 !== strpos( (string) $code, 'PROV' ) && VHB_Fdm::valid( (string) $code ) ? (string) $code : '',
 				'tt'            => (array) ( $res['tt'] ?? array() ),
 				'provisoire'    => ! empty( $r['provisoire'] ),
 			);
@@ -860,7 +861,11 @@ class VHB_Gesthand {
 	/** Passage du cron pour la compétition Gest'Hand d'une équipe. */
 	public static function cron( array $cfg, VHB_Fetcher $fetcher ) {
 		$bilan = self::recuperer( $fetcher );
-		VHB_Store::save_comp( $cfg['slug'], self::CLE, self::comp_data( $cfg ) );
+		$data  = self::comp_data( $cfg );
+		VHB_Store::save_comp( $cfg['slug'], self::CLE, $data );
+		if ( 'copie' === ( $cfg['fdm'] ?? 'copie' ) ) {
+			VHB_Fdm::ensure( $data, $fetcher ); // copie hébergée par le site, comme pour les matchs FFHB
+		}
 		return $bilan;
 	}
 
