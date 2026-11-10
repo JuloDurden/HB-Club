@@ -3,7 +3,7 @@ Contributors: julodurden
 Tags: handball, club, sport, ffhb, résultats
 Requires at least: 6.1
 Requires PHP: 7.4
-Stable tag: 3.4.2
+Stable tag: 3.4.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
@@ -126,6 +126,9 @@ Copyright (C) 2026 Julien Clavel.
 Ce programme est un logiciel libre : vous pouvez le redistribuer et le modifier selon les termes de la Licence publique générale GNU (GPL) publiée par la Free Software Foundation, version 2 ou (à votre choix) toute version ultérieure. Il est distribué sans aucune garantie. Texte complet : fichier LICENSE.
 
 == Journal des versions ==
+
+= 3.4.3 =
+* Coupe terminée : quand la FFHB retire la page de l'équipe (404) après son élimination et que tous ses matchs de coupe sont joués, les résultats sont gardés, la récupération s'arrête et l'erreur disparaît (« Terminée » dans Résultats FFHB). Elle reprend si l'adresse de la coupe change.
 
 = 3.4.2 =
 * Images téléversées depuis une fiche VHB (événement, club en entente...) : plus rattachées à la fiche, pour que l'API REST les montre aux visiteurs (image mise en avant d'un article absente de l'accueil). Les images déjà rattachées sont détachées à la mise à jour.

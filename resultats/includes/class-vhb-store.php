@@ -116,6 +116,37 @@ class VHB_Store {
 		self::put( $d );
 	}
 
+	/**
+	 * Coupe terminée : la FFHB a retiré la page de l'équipe (éliminée). Les résultats
+	 * sont gardés et la récupération s'arrête tant que l'adresse ne change pas.
+	 */
+	public static function mark_terminee( $slug, $cle, $url ) {
+		$d    = self::get();
+		$team = isset( $d['equipes'][ $slug ] ) ? self::normalize( $d['equipes'][ $slug ] ) : null;
+		if ( ! $team || ! isset( $team['competitions'][ $cle ] ) ) {
+			return;
+		}
+		$team['competitions'][ $cle ]['terminee']    = (string) $url;
+		$team['competitions'][ $cle ]['erreur']      = '';
+		$team['competitions'][ $cle ]['erreur_date'] = '';
+		$d['equipes'][ $slug ]                       = $team;
+		self::put( $d );
+	}
+
+	/** Toutes les rencontres connues d'une compétition sont jouées (ou perdues par forfait). */
+	public static function comp_finie( $comp ) {
+		$r = (array) ( $comp['rencontres'] ?? array() );
+		if ( ! $r ) {
+			return false;
+		}
+		foreach ( $r as $x ) {
+			if ( empty( $x['joue'] ) && empty( $x['forfait'] ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	/** Retire les équipes et compétitions qui ne figurent plus dans les réglages. */
 	public static function prune() {
 		$d    = self::get();
@@ -211,6 +242,7 @@ class VHB_Store {
 				'poule_url'        => (string) ( $data['poule_url'] ?? '' ),
 				'maj'              => (string) ( $data['maj'] ?? '' ),
 				'erreur'           => (string) ( $data['erreur'] ?? '' ),
+				'terminee'         => ! empty( $data['terminee'] ),
 				'erreur_date'      => (string) ( $data['erreur_date'] ?? '' ),
 			);
 			$comps[] = $cv;

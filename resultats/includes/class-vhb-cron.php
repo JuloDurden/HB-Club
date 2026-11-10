@@ -242,6 +242,15 @@ class VHB_Cron {
 				update_option( self::FAILS, $fails, false );
 				return;
 			}
+			$old = VHB_Store::comp( $cfg['slug'], $comp['cle'] );
+			if ( 'coupe' === $comp['type'] && $old && (string) ( $old['terminee'] ?? '' ) === (string) $comp['url'] ) {
+				// Coupe terminée (équipe éliminée) : plus rien à récupérer, les résultats restent affichés.
+				$run['ok'][]    = $nom;
+				$run['dernier'] = $nom . ' : terminée';
+				$fails[ $key ]  = 0;
+				update_option( self::FAILS, $fails, false );
+				return;
+			}
 			$data = $f->team( array_merge( $cfg, array( 'url' => $comp['url'] ) ) );
 			VHB_Store::save_comp( $cfg['slug'], $comp['cle'], $data );
 			foreach ( $f->warnings as $w ) {
@@ -257,6 +266,17 @@ class VHB_Cron {
 			$fails[ $key ]  = 0;
 		} catch ( Throwable $e ) {
 			$msg = $e->getMessage();
+			$old = VHB_Store::comp( $cfg['slug'], $comp['cle'] );
+			if ( 'coupe' === $comp['type'] && $e instanceof VHB_Fetch_Exception && 404 === (int) $e->getCode() && VHB_Store::comp_finie( $old ) ) {
+				// Page retirée par la FFHB après l'élimination : on garde les résultats et on arrête.
+				VHB_Store::mark_terminee( $cfg['slug'], $comp['cle'], $comp['url'] );
+				$run['warnings'][] = $nom . ' : page retirée par la FFHB (équipe éliminée), résultats gardés, récupération arrêtée';
+				$run['ok'][]       = $nom;
+				$run['dernier']    = $nom . ' : terminée';
+				$fails[ $key ]     = 0;
+				update_option( self::FAILS, $fails, false );
+				return;
+			}
 			VHB_Store::mark_error( $cfg['slug'], $comp['cle'], $msg );
 			$run['ko'][ $nom ] = $msg;
 			$run['dernier']    = $nom . ' : échec';

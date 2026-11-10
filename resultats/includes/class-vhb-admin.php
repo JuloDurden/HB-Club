@@ -251,7 +251,7 @@ class VHB_Admin {
 						<td><?php echo (int) $nbj; ?></td>
 						<td><?php echo wp_kses_post( $cl ); ?></td>
 						<td><?php echo $c ? esc_html( self::fmt( $c['maj'] ) ) : ''; ?></td>
-						<td class="vhb-err"><?php echo $c && $c['erreur'] ? esc_html( self::fmt( $c['erreur_date'] ) . ' : ' . $c['erreur'] ) : ''; ?></td>
+						<td class="vhb-err"><?php echo $c && $c['erreur'] ? esc_html( self::fmt( $c['erreur_date'] ) . ' : ' . $c['erreur'] ) : ( $c && ! empty( $c['terminee'] ) ? '<span style="color:#50575e">Terminée : page retirée par la FFHB (équipe éliminée), résultats gardés.</span>' : '' ); // phpcs:ignore ?></td>
 					</tr>
 						<?php
 					endforeach;
